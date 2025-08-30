@@ -1101,7 +1101,7 @@
                         {% endif %}
                     </div>
                     
-                    <div class="bot-actions">
+                    <div class="bot-actions" id="bot-actions-{{ bot.id }}">
                         <button class="bot-btn primary start-btn" 
                                 {% if bot.status == 'running' %}disabled{% endif %} 
                                 title="Запустить">
@@ -1115,6 +1115,7 @@
                         <button class="bot-btn secondary edit-btn" title="Редактировать">
                             <i class="fas fa-edit"></i>
                         </button>
+                        <!-- Smart Buttons will be added dynamically by JavaScript -->
                         <a href="/dialogs/{{ bot.id }}" class="bot-btn secondary" title="Диалоги">
                             <i class="fas fa-comments"></i>
                         </a>
@@ -1297,6 +1298,18 @@
                         <div class="form-checkbox">
                             <input type="checkbox" id="edit_enable_voice_responses">
                             <label for="edit_enable_voice_responses">🎤 Голосовые ответы</label>
+                        </div>
+                        
+                        <!-- Link Transformation Button -->
+                        <div class="form-section mt-4">
+                            <h4 class="section-title">🔗 Дополнительные возможности</h4>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-outline-primary" onclick="openLinkTransformationModal(getBotIdFromModal())">
+                                    <i class="fas fa-link me-2"></i>
+                                    Настроить преобразование ссылок в кнопки
+                                </button>
+                                <small class="form-help">Настройка автоматического превращения ссылок в интерактивные кнопки</small>
+                            </div>
                         </div>
                     </div>
                     
@@ -1529,6 +1542,47 @@
         // Edit Bot Functions
         function closeEditBotModal() {
             $('#editBotModal').removeClass('show');
+        }
+        
+        function getBotIdFromModal() {
+            return parseInt($('#edit_bot_id').val()) || null;
+        }
+        
+        // Временная функция для открытия Link Transformation модала
+        function openLinkTransformationModal(botId) {
+            if (!botId) {
+                alert('Ошибка: ID бота не указан');
+                return;
+            }
+            
+            console.log('Opening Link Transformation modal for bot:', botId);
+            
+            // Check if modal exists
+            const modal = document.getElementById('linkTransformationModal');
+            if (modal) {
+                // Set bot ID in modal
+                modal.setAttribute('data-bot-id', botId);
+                
+                // Show modal
+                modal.classList.add('show');
+                modal.style.display = 'block';
+                
+                // Initialize Link Transformation Manager and load configuration
+                if (!window.LinkTransformationManagers) {
+                    window.LinkTransformationManagers = {};
+                }
+                if (!window.LinkTransformationManagers[botId]) {
+                    window.LinkTransformationManagers[botId] = new window.LinkTransformationManager(botId);
+                }
+                
+                // Manually trigger loadConfiguration since we removed Bootstrap event
+                window.LinkTransformationManagers[botId].loadConfiguration();
+                
+                console.log('Link Transformation modal opened for bot', botId);
+            } else {
+                alert('Модальное окно Link Transformation не найдено в DOM');
+                console.error('linkTransformationModal element not found');
+            }
         }
         
         // Modal Tab Functions
@@ -2141,5 +2195,19 @@
             });
         });
     </script>
+    
+        <!-- Link Transformation Modals -->
+    {% include 'link_transformation_modal.html' %}
+    {% include 'quick_link_setup.html' %}
+    {% include 'simple_link_setup.html' %}
+    {% include 'ultra_simple_link_setup.html' %}
+    {% include 'smart_buttons_modal.html' %}
+
+    <!-- Link Transformation Scripts -->
+    <script src="/static/js/link_transformation.js"></script>
+    <script src="/static/js/link_transformation_ui.js"></script>
+    <script src="/static/js/smart_buttons.js"></script>
+    <script src="/static/js/simple_link_setup.js"></script>
+    <script src="/static/js/ultra_simple_link_setup.js"></script>
 </body>
 </html>

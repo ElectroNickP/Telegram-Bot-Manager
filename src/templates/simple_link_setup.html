@@ -1,0 +1,211 @@
+<!-- ПРОСТОЙ МАСТЕР НАСТРОЙКИ УМНЫХ КНОПОК -->
+<div class="modal fade" id="simpleLinkSetupModal" tabindex="-1" aria-labelledby="simpleLinkSetupModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <!-- Заголовок с простым объяснением -->
+            <div class="modal-header bg-gradient-primary text-white">
+                <h5 class="modal-title fw-bold" id="simpleLinkSetupModalLabel">
+                    ✨ Умные кнопки вместо ссылок
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+
+            <div class="modal-body p-4">
+                <!-- Простое объяснение что это такое -->
+                <div class="text-center mb-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-5">
+                            <div class="bg-light p-3 rounded">
+                                <h6 class="text-muted mb-2">БЫЛО:</h6>
+                                <div class="small text-muted">
+                                    Вот полезная ссылка:<br>
+                                    <span class="text-primary">https://script.google.com/d/abc123/edit</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <i class="fas fa-arrow-right fa-2x text-success"></i>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="bg-light p-3 rounded">
+                                <h6 class="text-muted mb-2">СТАЛО:</h6>
+                                <div class="small">
+                                    Вот полезная ссылка:<br>
+                                    <button class="btn btn-outline-primary btn-sm mt-1">
+                                        📊 Открыть Google Script
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Выбор популярных сервисов одним кликом -->
+                <div class="mb-4">
+                    <h6 class="fw-bold mb-3">
+                        <i class="fas fa-magic text-primary"></i>
+                        Быстрая настройка (1 клик):
+                    </h6>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <button type="button" class="btn btn-outline-success w-100 h-100 p-3 quick-preset-btn" 
+                                    data-preset="google-script" data-name="Google Apps Script" 
+                                    data-domain="script.google.com" data-button="📊 Открыть Google Script">
+                                <div>
+                                    <i class="fab fa-google fa-2x mb-2"></i><br>
+                                    <strong>Google Scripts</strong><br>
+                                    <small class="text-muted">script.google.com</small>
+                                </div>
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="button" class="btn btn-outline-dark w-100 h-100 p-3 quick-preset-btn"
+                                    data-preset="github" data-name="GitHub Repository" 
+                                    data-domain="github.com" data-button="👨‍💻 Открыть GitHub">
+                                <div>
+                                    <i class="fab fa-github fa-2x mb-2"></i><br>
+                                    <strong>GitHub</strong><br>
+                                    <small class="text-muted">github.com</small>
+                                </div>
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="button" class="btn btn-outline-info w-100 h-100 p-3 quick-preset-btn"
+                                    data-preset="google-sheets" data-name="Google Sheets" 
+                                    data-domain="docs.google.com" data-button="📊 Открыть таблицу">
+                                <div>
+                                    <i class="fas fa-table fa-2x mb-2"></i><br>
+                                    <strong>Google Sheets</strong><br>
+                                    <small class="text-muted">docs.google.com</small>
+                                </div>
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="button" class="btn btn-outline-primary w-100 h-100 p-3 quick-preset-btn"
+                                    data-preset="youtube" data-name="YouTube Video" 
+                                    data-domain="youtube.com" data-button="📺 Смотреть видео">
+                                <div>
+                                    <i class="fab fa-youtube fa-2x mb-2"></i><br>
+                                    <strong>YouTube</strong><br>
+                                    <small class="text-muted">youtube.com</small>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Быстрая настройка своего домена -->
+                <div class="mb-4">
+                    <h6 class="fw-bold mb-3">
+                        <i class="fas fa-cog text-secondary"></i>
+                        Или настрой свой домен:
+                    </h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small">Домен сайта:</label>
+                            <input type="text" class="form-control" id="customDomain" 
+                                   placeholder="example.com" />
+                            <small class="text-muted">Например: notion.so, figma.com</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Текст кнопки:</label>
+                            <input type="text" class="form-control" id="customButtonText" 
+                                   placeholder="🔗 Открыть ссылку" />
+                            <small class="text-muted">Можно использовать эмодзи</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary w-100 mt-3" id="addCustomPreset">
+                        <i class="fas fa-plus"></i> Добавить свой домен
+                    </button>
+                </div>
+
+                <!-- Показать активные правила простым языком -->
+                <div class="mb-4" id="activeRulesSection" style="display: none;">
+                    <h6 class="fw-bold text-success mb-3">
+                        <i class="fas fa-check-circle"></i>
+                        Активные умные кнопки:
+                    </h6>
+                    <div id="activeRulesList" class="d-flex flex-wrap gap-2">
+                        <!-- Будут добавляться активные правила как бейджи -->
+                    </div>
+                </div>
+
+                <!-- Тестирование простым языком -->
+                <div class="mb-4">
+                    <h6 class="fw-bold mb-3">
+                        <i class="fas fa-flask text-warning"></i>
+                        Проверить как работает:
+                    </h6>
+                    <textarea class="form-control mb-2" id="simpleTestText" rows="3" 
+                              placeholder="Вставьте сюда текст со ссылками для проверки...
+Например: Полезная автоматизация https://script.google.com/d/abc123/edit"></textarea>
+                    <button type="button" class="btn btn-warning" id="simpleTestBtn">
+                        <i class="fas fa-magic"></i> Показать как будет выглядеть
+                    </button>
+                    <div id="simpleTestResult" class="mt-3" style="display: none;"></div>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-light">
+                <div class="d-flex justify-content-between w-100 align-items-center">
+                    <button type="button" class="btn btn-link text-muted" id="advancedModeBtn">
+                        <i class="fas fa-cogs"></i> Расширенные настройки
+                    </button>
+                    <div>
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">
+                            Отмена
+                        </button>
+                        <button type="button" class="btn btn-success" id="saveSimpleSettings">
+                            <i class="fas fa-save"></i> Сохранить настройки
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.quick-preset-btn {
+    transition: all 0.3s ease;
+    border-width: 2px;
+}
+
+.quick-preset-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.quick-preset-btn.active {
+    background-color: var(--bs-success);
+    border-color: var(--bs-success);
+    color: white;
+}
+
+.quick-preset-btn.active i {
+    color: white;
+}
+
+.rule-badge {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    position: relative;
+}
+
+.rule-badge .remove-rule {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    border: none;
+    cursor: pointer;
+}
+</style>
+
+

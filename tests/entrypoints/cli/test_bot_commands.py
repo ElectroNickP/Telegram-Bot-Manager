@@ -647,3 +647,15 @@ class TestBotCommandHelp:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+

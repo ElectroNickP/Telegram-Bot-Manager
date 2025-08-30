@@ -24,9 +24,14 @@ Thumbs.db
 
 # Application specific
 bot.log
-# Legacy config files (migrated to external system ~/.telegram-bot-manager/)
+# Config files with sensitive data (tokens, API keys)
 bot_configs.json
 src/bot_configs.json
+**/bot_configs.json
+**/config.json
+**/secrets.json
+**/tokens.json
+**/api_keys.json
 *.tmp
 # Voice message temp files
 *.ogg

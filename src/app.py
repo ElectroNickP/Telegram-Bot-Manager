@@ -15,6 +15,7 @@ from api.auth import auth_bp
 from api.v1 import api_v1_bots_bp, api_v1_system_bp, api_v1_admin_bp, api_v1_marketplace_bp  
 from api.v2 import api_v2_system_bp, api_v2_bots_bp, api_v2_telegram_bp
 from api.v2.uploads import api_v2_uploads_bp
+from api.v2.link_transformation import api_v2_link_transformation_bp
 from web import web_bp
 from shared.utils import datetime_filter, find_free_port
 
@@ -85,6 +86,7 @@ def create_app():
     app.register_blueprint(api_v2_bots_bp)
     app.register_blueprint(api_v2_telegram_bp)
     app.register_blueprint(api_v2_uploads_bp)
+    app.register_blueprint(api_v2_link_transformation_bp)
     
     # Add route for serving uploaded files
     @app.route('/static/uploads/<path:filename>')
@@ -95,11 +97,12 @@ def create_app():
         return send_from_directory(uploads_dir, filename)
     
     logger.info("✅ Flask app created with modular structure")
-    logger.info("📋 Registered blueprints: auth, web, api_v1_bots, api_v1_system, api_v1_admin, api_v1_marketplace, api_v2_system, api_v2_bots, api_v2_telegram")
+    logger.info("📋 Registered blueprints: auth, web, api_v1_bots, api_v1_system, api_v1_admin, api_v1_marketplace, api_v2_system, api_v2_bots, api_v2_telegram, api_v2_uploads, api_v2_link_transformation")
     logger.info("✅ API v1 completed!")
     logger.info("🚀 API v2 system module extracted!")
     logger.info("🚀 API v2 bots module extracted!")
     logger.info("🚀 API v2 telegram module extracted!")
+    logger.info("🔗 API v2 link transformation module added!")
     logger.info("🎉 ALL API MODULES EXTRACTED! REFACTORING COMPLETE!")
     return app
 

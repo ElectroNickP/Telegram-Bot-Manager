@@ -321,3 +321,15 @@ class GitAutoUpdaterAdapter(AutoUpdaterPort):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+

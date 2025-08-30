@@ -10,6 +10,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional, Dict, Any
 
+from .link_transformation import LinkTransformationConfig
+
 
 class BotStatus(Enum):
     """Bot status enumeration."""
@@ -32,6 +34,7 @@ class BotConfig:
     enable_voice_responses: bool = False
     voice_model: str = "tts-1"
     voice_type: str = "alloy"
+    link_transformation: LinkTransformationConfig = field(default_factory=LinkTransformationConfig)
     
     def validate(self) -> list[str]:
         """Validate bot configuration and return list of errors."""
@@ -58,6 +61,11 @@ class BotConfig:
         if self.voice_type not in ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]:
             errors.append("Invalid voice type")
         
+        # Validate link transformation config
+        link_errors = self.link_transformation.validate()
+        for error in link_errors:
+            errors.append(f"Link transformation: {error}")
+        
         return errors
     
     def to_dict(self) -> Dict[str, Any]:
@@ -72,6 +80,7 @@ class BotConfig:
             "enable_voice_responses": self.enable_voice_responses,
             "voice_model": self.voice_model,
             "voice_type": self.voice_type,
+            "link_transformation": self.link_transformation.to_dict(),
         }
     
     @classmethod
@@ -87,6 +96,9 @@ class BotConfig:
             enable_voice_responses=data.get("enable_voice_responses", False),
             voice_model=data.get("voice_model", "tts-1"),
             voice_type=data.get("voice_type", "alloy"),
+            link_transformation=LinkTransformationConfig.from_dict(
+                data.get("link_transformation", {})
+            ),
         )
 
 
@@ -179,6 +191,7 @@ class Bot:
             message_count=data.get("message_count", 0),
             voice_message_count=data.get("voice_message_count", 0),
         )
+
 
 
 

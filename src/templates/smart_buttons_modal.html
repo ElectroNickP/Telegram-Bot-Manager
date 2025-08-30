@@ -1,0 +1,807 @@
+<!-- УМНЫЕ КНОПКИ - МОДАЛЬНОЕ ОКНО В СТИЛЕ ПРОЕКТА -->
+<div class="modal" id="smartButtonsModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content smart-buttons-content">
+        
+        <!-- Заголовок модального окна -->
+        <div class="modal-header">
+            <div class="header-info">
+                <h2 class="modal-title">
+                    <i class="fas fa-magic"></i>
+                    Умные кнопки
+                </h2>
+                <p class="modal-subtitle">Превращайте ссылки в интерактивные кнопки</p>
+            </div>
+            <button type="button" class="modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Основное содержимое -->
+        <div class="modal-body">
+            
+            <!-- Верхняя секция - создание правила -->
+            <div class="rule-creator-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-plus-circle"></i> Создать правило</h3>
+                    <p>Когда ИИ отправляет ссылку с указанным текстом, она превратится в кнопку</p>
+                </div>
+                
+                <div class="creator-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-search"></i> Искать в ссылке
+                            </label>
+                            <input type="text" 
+                                   id="searchInLink" 
+                                   class="form-control" 
+                                   placeholder="script.google.com"
+                                   autocomplete="off">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-tag"></i> Текст кнопки
+                            </label>
+                            <input type="text" 
+                                   id="buttonTextInput" 
+                                   class="form-control" 
+                                   placeholder="Перейти к форме"
+                                   autocomplete="off">
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" 
+                                class="btn btn-primary" 
+                                id="addRuleBtn">
+                            <i class="fas fa-plus"></i>
+                            <span>Создать правило</span>
+                        </button>
+                        
+                        <button type="button" 
+                                class="btn btn-secondary" 
+                                id="testRuleBtn">
+                            <i class="fas fa-flask"></i>
+                            <span>Тест</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Нижняя секция - список правил -->
+            <div class="rules-list-section">
+                <div class="section-header">
+                    <div class="header-left">
+                        <h3><i class="fas fa-list"></i> Активные правила</h3>
+                        <span class="rules-counter" id="rulesCount">0 правил</span>
+                    </div>
+                    <div class="header-actions">
+                        <button type="button" class="btn btn-danger btn-sm" id="clearAllRulesBtn" style="display: none;">
+                            <i class="fas fa-trash"></i>
+                            Очистить все
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="rules-container" id="rulesContainer">
+                    <!-- Пустое состояние -->
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-icon">
+                            <i class="fas fa-inbox"></i>
+                        </div>
+                        <h4>Нет правил</h4>
+                        <p>Создайте первое правило для автоматического преобразования ссылок в кнопки</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Футер модального окна -->
+        <div class="modal-footer">
+            <div class="footer-actions">
+                <button type="button" class="btn btn-success" id="saveSettingsBtn">
+                    <i class="fas fa-save"></i>
+                    <span>Сохранить изменения</span>
+                </button>
+                <button type="button" class="btn btn-secondary" id="cancelBtn">
+                    <i class="fas fa-times"></i>
+                    <span>Закрыть</span>
+                </button>
+            </div>
+            <div class="save-status" id="saveStatus"></div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Шаблон для правила -->
+<template id="ruleTemplate">
+    <div class="rule-card">
+        <div class="rule-content">
+            <div class="rule-main">
+                <div class="rule-search">
+                    <i class="fas fa-search"></i>
+                    <span class="search-text"></span>
+                </div>
+                <div class="rule-arrow">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+                <div class="rule-button">
+                    <i class="fas fa-mouse-pointer"></i>
+                    <span class="button-text"></span>
+                </div>
+            </div>
+            <div class="rule-actions">
+                <button type="button" class="btn btn-sm btn-edit-rule" title="Редактировать">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-delete-rule" title="Удалить">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        <div class="rule-stats">
+            <span class="rule-priority">Приоритет: <span class="priority-value"></span></span>
+            <span class="rule-status">
+                <i class="fas fa-check-circle"></i> Активно
+            </span>
+        </div>
+    </div>
+</template>
+
+<!-- Тестовая панель -->
+<div class="test-panel" id="testPanel" style="display: none;">
+    <div class="test-content">
+        <div class="test-header">
+            <h4><i class="fas fa-flask"></i> Тест правила</h4>
+            <button type="button" class="test-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="test-body">
+            <div class="form-group">
+                <label class="form-label">Введите текст для тестирования:</label>
+                <textarea id="testTextArea" class="form-control" rows="3" placeholder="Вставьте ссылку или текст для проверки..."></textarea>
+            </div>
+            <div class="test-actions">
+                <button type="button" class="btn btn-primary" id="runTestBtn">
+                    <i class="fas fa-play"></i>
+                    Запустить тест
+                </button>
+            </div>
+            <div class="test-result" id="testResult"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Уведомления -->
+<div class="notification-container" id="notificationContainer"></div>
+
+<style>
+/* СТИЛИ ДЛЯ МОДАЛЬНОГО ОКНА УМНЫХ КНОПОК В СТИЛЕ ПРОЕКТА */
+
+/* Основное модальное окно */
+#smartButtonsModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: 'Inter', sans-serif;
+}
+
+#smartButtonsModal.show {
+    display: flex;
+}
+
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+}
+
+.smart-buttons-content {
+    position: relative;
+    background: var(--bg-surface);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 900px;
+    max-height: 85vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-glass);
+    backdrop-filter: blur(16px);
+    z-index: 1;
+}
+
+/* Заголовок */
+.modal-header {
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    background: linear-gradient(135deg, rgba(65, 242, 255, 0.1), rgba(76, 168, 255, 0.05));
+}
+
+.header-info .modal-title {
+    color: var(--text-primary);
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-info .modal-title i {
+    color: var(--primary);
+}
+
+.modal-subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+/* Основное содержимое */
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+/* Секция создания правила */
+.rule-creator-section {
+    padding: 28px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(135deg, rgba(65, 242, 255, 0.03), transparent);
+}
+
+.section-header h3 {
+    color: var(--text-primary);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-header h3 i {
+    color: var(--primary);
+    font-size: 16px;
+}
+
+.section-header p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin: 0 0 20px 0;
+}
+
+/* Форма создания */
+.creator-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-label i {
+    color: var(--primary);
+    font-size: 12px;
+}
+
+.form-control {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    padding: 12px 16px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(65, 242, 255, 0.1);
+    background: rgba(65, 242, 255, 0.05);
+}
+
+.form-control::placeholder {
+    color: var(--text-secondary);
+}
+
+/* Кнопки действий */
+.form-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.btn {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--gradient-main);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(65, 242, 255, 0.3);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-secondary {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #00ff88, #00cc66);
+    color: white;
+}
+
+.btn-success:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ff4757, #ff3838);
+    color: white;
+}
+
+.btn-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+}
+
+.btn-sm {
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 6px;
+}
+
+/* Секция списка правил */
+.rules-list-section {
+    padding: 28px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.rules-list-section .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rules-counter {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Контейнер правил */
+.rules-container {
+    flex: 1;
+    min-height: 200px;
+    max-height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 4px;
+}
+
+/* Скроллбары */
+.rules-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.rules-container::-webkit-scrollbar-track {
+    background: var(--glass-bg);
+    border-radius: 3px;
+}
+
+.rules-container::-webkit-scrollbar-thumb {
+    background: var(--glass-border);
+    border-radius: 3px;
+}
+
+.rules-container::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+
+/* Пустое состояние */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.empty-icon {
+    font-size: 48px;
+    color: var(--glass-border);
+    margin-bottom: 16px;
+}
+
+.empty-state h4 {
+    color: var(--text-primary);
+    font-size: 18px;
+    margin: 0 0 8px 0;
+}
+
+.empty-state p {
+    font-size: 14px;
+    margin: 0;
+    max-width: 300px;
+}
+
+/* Карточки правил */
+.rule-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.2s ease;
+}
+
+.rule-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(65, 242, 255, 0.1);
+}
+
+.rule-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.rule-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+}
+
+.rule-search, .rule-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.rule-search i, .rule-button i {
+    color: var(--primary);
+    font-size: 12px;
+}
+
+.rule-arrow {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.rule-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.rule-stats {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.rule-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #00ff88;
+}
+
+/* Футер */
+.modal-footer {
+    padding: 20px 28px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, rgba(65, 242, 255, 0.02), transparent);
+}
+
+.footer-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.save-status {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* Тестовая панель */
+.test-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg-surface);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    width: 400px;
+    max-width: 90vw;
+    z-index: 10000;
+    box-shadow: var(--shadow-glass);
+    backdrop-filter: blur(16px);
+}
+
+.test-content {
+    padding: 0;
+}
+
+.test-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.test-header h4 {
+    color: var(--text-primary);
+    margin: 0;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.test-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+}
+
+.test-body {
+    padding: 20px;
+}
+
+.test-result {
+    margin-top: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.test-result.success {
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    color: #00ff88;
+}
+
+.test-result.error {
+    background: rgba(255, 71, 87, 0.1);
+    border: 1px solid rgba(255, 71, 87, 0.3);
+    color: #ff4757;
+}
+
+/* Уведомления */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10001;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.notification {
+    background: var(--bg-surface);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text-primary);
+    font-size: 14px;
+    min-width: 250px;
+    box-shadow: var(--shadow-glass);
+    backdrop-filter: blur(16px);
+    animation: slideInRight 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.notification.success {
+    border-color: rgba(0, 255, 136, 0.3);
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), var(--bg-surface));
+}
+
+.notification.error {
+    border-color: rgba(255, 71, 87, 0.3);
+    background: linear-gradient(135deg, rgba(255, 71, 87, 0.1), var(--bg-surface));
+}
+
+.notification.warning {
+    border-color: rgba(255, 206, 84, 0.3);
+    background: linear-gradient(135deg, rgba(255, 206, 84, 0.1), var(--bg-surface));
+}
+
+.notification.info {
+    border-color: rgba(65, 242, 255, 0.3);
+    background: linear-gradient(135deg, rgba(65, 242, 255, 0.1), var(--bg-surface));
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .smart-buttons-content {
+        max-width: 100%;
+        margin: 10px;
+        max-height: 90vh;
+    }
+    
+    .modal-header {
+        padding: 20px;
+    }
+    
+    .rule-creator-section, .rules-list-section {
+        padding: 20px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .modal-footer {
+        padding: 16px 20px;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .footer-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .rules-container {
+        max-height: 250px;
+    }
+}
+
+@media (max-width: 480px) {
+    #smartButtonsModal {
+        padding: 10px;
+    }
+    
+    .header-info .modal-title {
+        font-size: 20px;
+    }
+    
+    .rule-main {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .rule-arrow {
+        transform: rotate(90deg);
+    }
+}
+</style>

@@ -1,0 +1,595 @@
+<!-- Quick Link Transformation Setup Modal -->
+<div class="modal fade" id="quickLinkSetupModal" tabindex="-1" aria-labelledby="quickLinkSetupModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="quickLinkSetupModalLabel">
+          <i class="fas fa-magic text-primary"></i>
+          🔗 Быстрая настройка: Ссылки → Кнопки
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="container-fluid">
+          
+          <!-- Quick Setup Options -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="alert alert-info">
+                <i class="fas fa-lightbulb"></i>
+                <strong>Как это работает:</strong> Когда ИИ отправляет сообщения с ссылками, они автоматически превращаются в удобные кнопки для пользователей в Telegram.
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Toggle -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="mb-1">
+                        <i class="fas fa-power-off text-success"></i>
+                        Включить преобразование ссылок в кнопки
+                      </h6>
+                      <small class="text-muted">Ссылки будут автоматически превращаться в красивые кнопки</small>
+                    </div>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="quickLinkEnabled">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Quick Setup Templates -->
+          <div class="row mb-4" id="quickSetupOptions" style="display: none;">
+            <div class="col-12">
+              <h6><i class="fas fa-rocket"></i> Быстрая настройка по шаблонам:</h6>
+              
+              <div class="row">
+                <!-- Google Services -->
+                <div class="col-md-6 mb-3">
+                  <div class="card template-card" data-template="google">
+                    <div class="card-body text-center">
+                      <i class="fab fa-google fa-2x text-primary mb-2"></i>
+                      <h6>Google Сервисы</h6>
+                      <small class="text-muted">Google Sheets, Scripts, Drive</small>
+                      <div class="mt-2">
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="template_google">
+                          <label class="form-check-label" for="template_google">Включить</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- GitHub -->
+                <div class="col-md-6 mb-3">
+                  <div class="card template-card" data-template="github">
+                    <div class="card-body text-center">
+                      <i class="fab fa-github fa-2x text-dark mb-2"></i>
+                      <h6>GitHub</h6>
+                      <small class="text-muted">Репозитории, файлы, релизы</small>
+                      <div class="mt-2">
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="template_github">
+                          <label class="form-check-label" for="template_github">Включить</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Все Markdown ссылки -->
+                <div class="col-md-6 mb-3">
+                  <div class="card template-card" data-template="markdown">
+                    <div class="card-body text-center">
+                      <i class="fas fa-link fa-2x text-info mb-2"></i>
+                      <h6>Все Markdown ссылки</h6>
+                      <small class="text-muted">Ссылки в формате [текст](url)</small>
+                      <div class="mt-2">
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="template_markdown">
+                          <label class="form-check-label" for="template_markdown">Включить</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Собственный домен -->
+                <div class="col-md-6 mb-3">
+                  <div class="card template-card" data-template="custom">
+                    <div class="card-body text-center">
+                      <i class="fas fa-plus-circle fa-2x text-success mb-2"></i>
+                      <h6>Свой домен</h6>
+                      <small class="text-muted">Настроить для любого сайта</small>
+                      <div class="mt-2">
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="template_custom">
+                          <label class="form-check-label" for="template_custom">Настроить</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Custom Domain Setup -->
+          <div class="row mb-4" id="customDomainSetup" style="display: none;">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">
+                  <h6 class="mb-0"><i class="fas fa-cog"></i> Настройка собственного домена</h6>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="customDomain" class="form-label">Домен или начало ссылки</label>
+                        <input type="text" class="form-control" id="customDomain" 
+                               placeholder="script.google.com">
+                        <div class="form-text">Например: script.google.com или youtube.com</div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="customButtonText" class="form-label">Текст кнопки</label>
+                        <input type="text" class="form-control" id="customButtonText" 
+                               placeholder="🔗 Открыть ссылку">
+                        <div class="form-text">Текст, который будет на кнопке</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Test Section -->
+          <div class="row mb-3" id="testSection" style="display: none;">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">
+                  <h6 class="mb-0"><i class="fas fa-vial"></i> Протестировать настройки</h6>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label for="testText" class="form-label">Введите текст со ссылками для проверки</label>
+                    <textarea class="form-control" id="testText" rows="3" 
+                              placeholder="Вот полезная ссылка: https://script.google.com/d/abc123/edit">Вот полезная ссылка для автоматизации: https://script.google.com/d/abc123/edit</textarea>
+                  </div>
+                  
+                  <button type="button" class="btn btn-outline-info" id="quickTestBtn">
+                    <i class="fas fa-play"></i> Протестировать
+                  </button>
+                  
+                  <div id="quickTestResults" class="mt-3" style="display: none;">
+                    <hr>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <strong>Обработанный текст:</strong>
+                        <div class="bg-light p-2 rounded mt-1" id="quickProcessedText"></div>
+                      </div>
+                      <div class="col-md-6">
+                        <strong>Кнопки:</strong>
+                        <div id="quickPreviewButtons" class="mt-1"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times"></i> Отмена
+        </button>
+        <button type="button" class="btn btn-primary" id="saveQuickLinkSetupBtn">
+          <i class="fas fa-save"></i> Сохранить настройки
+        </button>
+        <button type="button" class="btn btn-outline-info" id="advancedLinkSetupBtn">
+          <i class="fas fa-cogs"></i> Расширенные настройки
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.template-card {
+  transition: all 0.2s;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.template-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.template-card.selected {
+  border-color: #0d6efd;
+  background-color: #f8f9ff;
+}
+
+.quick-preview-button {
+  display: inline-block;
+  background-color: #0066cc;
+  color: white;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  margin: 2px;
+  font-size: 14px;
+}
+
+.quick-preview-button:hover {
+  background-color: #0052a3;
+  text-decoration: none;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Quick Link Setup Modal functionality
+    const quickLinkEnabled = document.getElementById('quickLinkEnabled');
+    const quickSetupOptions = document.getElementById('quickSetupOptions');
+    const testSection = document.getElementById('testSection');
+    const customDomainSetup = document.getElementById('customDomainSetup');
+    
+    // Toggle setup options when enabled/disabled
+    if (quickLinkEnabled) {
+        quickLinkEnabled.addEventListener('change', function() {
+            if (this.checked) {
+                quickSetupOptions.style.display = 'block';
+                testSection.style.display = 'block';
+            } else {
+                quickSetupOptions.style.display = 'none';
+                testSection.style.display = 'none';
+                customDomainSetup.style.display = 'none';
+            }
+        });
+    }
+    
+    // Handle template card selection
+    document.querySelectorAll('.template-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const checkbox = this.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                this.classList.add('selected');
+            } else {
+                this.classList.remove('selected');
+            }
+            
+            // Show custom domain setup if custom template is selected
+            if (checkbox.id === 'template_custom') {
+                if (checkbox.checked) {
+                    customDomainSetup.style.display = 'block';
+                } else {
+                    customDomainSetup.style.display = 'none';
+                }
+            }
+        });
+    });
+    
+    // Handle checkbox change for template cards
+    document.querySelectorAll('.template-card input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const card = this.closest('.template-card');
+            if (this.checked) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+            
+            // Show/hide custom domain setup
+            if (this.id === 'template_custom') {
+                if (this.checked) {
+                    customDomainSetup.style.display = 'block';
+                } else {
+                    customDomainSetup.style.display = 'none';
+                }
+            }
+        });
+    });
+    
+    // Quick test functionality
+    const quickTestBtn = document.getElementById('quickTestBtn');
+    if (quickTestBtn) {
+        quickTestBtn.addEventListener('click', function() {
+            performQuickTest();
+        });
+    }
+    
+    // Save quick setup
+    const saveBtn = document.getElementById('saveQuickLinkSetupBtn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+            saveQuickLinkSetup();
+        });
+    }
+    
+    // Advanced setup button
+    const advancedBtn = document.getElementById('advancedLinkSetupBtn');
+    if (advancedBtn) {
+        advancedBtn.addEventListener('click', function() {
+            // Close quick setup modal and open advanced modal
+            const quickModal = bootstrap.Modal.getInstance(document.getElementById('quickLinkSetupModal'));
+            if (quickModal) {
+                quickModal.hide();
+            }
+            
+            // Open advanced modal (if available)
+            const botId = document.getElementById('quickLinkSetupModal').getAttribute('data-bot-id');
+            if (window.openLinkTransformationModal) {
+                window.openLinkTransformationModal(botId);
+            }
+        });
+    }
+});
+
+async function performQuickTest() {
+    const testText = document.getElementById('testText').value;
+    const botId = document.getElementById('quickLinkSetupModal').getAttribute('data-bot-id');
+    
+    if (!testText.trim()) {
+        alert('Введите текст для тестирования');
+        return;
+    }
+    
+    try {
+        // Create test configuration from current settings
+        const config = buildQuickConfig();
+        
+        const response = await fetch(`/api/v2/link-transformation/${botId}/test`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                text: testText,
+                config: config
+            })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            displayQuickTestResults(result.data);
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        console.error('Test error:', error);
+        alert('Ошибка тестирования: ' + error.message);
+    }
+}
+
+function buildQuickConfig() {
+    const config = {
+        enabled: document.getElementById('quickLinkEnabled').checked,
+        max_buttons_per_message: 5,
+        button_layout: "vertical",
+        process_ai_responses: true,
+        transformation_rules: []
+    };
+    
+    // Add Google services if selected
+    if (document.getElementById('template_google')?.checked) {
+        config.transformation_rules.push({
+            id: 'google_scripts_quick',
+            name: 'Google Apps Script',
+            enabled: true,
+            match_type: 'domain',
+            match_value: 'script.google.com',
+            button_text: '📊 Открыть Google Script',
+            button_emoji: '📊',
+            remove_original_link: true,
+            priority: 100
+        });
+        
+        config.transformation_rules.push({
+            id: 'google_sheets_quick',
+            name: 'Google Sheets',
+            enabled: true,
+            match_type: 'url_contains',
+            match_value: 'docs.google.com/spreadsheets',
+            button_text: '📋 Открыть Google Sheets',
+            button_emoji: '📋',
+            remove_original_link: true,
+            priority: 90
+        });
+    }
+    
+    // Add GitHub if selected
+    if (document.getElementById('template_github')?.checked) {
+        config.transformation_rules.push({
+            id: 'github_quick',
+            name: 'GitHub Repository',
+            enabled: true,
+            match_type: 'domain',
+            match_value: 'github.com',
+            button_text: '💻 Открыть GitHub',
+            button_emoji: '💻',
+            remove_original_link: true,
+            priority: 80
+        });
+    }
+    
+    // Add Markdown links if selected
+    if (document.getElementById('template_markdown')?.checked) {
+        config.transformation_rules.push({
+            id: 'markdown_quick',
+            name: 'Все Markdown ссылки',
+            enabled: true,
+            match_type: 'markdown_link',
+            match_value: '',
+            button_text: '🔗 Открыть ссылку',
+            button_emoji: '🔗',
+            remove_original_link: true,
+            priority: 1
+        });
+    }
+    
+    // Add custom domain if selected
+    if (document.getElementById('template_custom')?.checked) {
+        const customDomain = document.getElementById('customDomain').value;
+        const customButtonText = document.getElementById('customButtonText').value;
+        
+        if (customDomain && customButtonText) {
+            config.transformation_rules.push({
+                id: 'custom_quick',
+                name: `Custom: ${customDomain}`,
+                enabled: true,
+                match_type: 'domain',
+                match_value: customDomain,
+                button_text: customButtonText,
+                button_emoji: '🔗',
+                remove_original_link: true,
+                priority: 50
+            });
+        }
+    }
+    
+    return config;
+}
+
+function displayQuickTestResults(data) {
+    const processedText = document.getElementById('quickProcessedText');
+    const previewButtons = document.getElementById('quickPreviewButtons');
+    const results = document.getElementById('quickTestResults');
+    
+    // Show processed text
+    processedText.textContent = data.processed_text;
+    
+    // Show buttons
+    previewButtons.innerHTML = '';
+    data.buttons.forEach(button => {
+        const btnElement = document.createElement('a');
+        btnElement.href = button.url;
+        btnElement.target = '_blank';
+        btnElement.className = 'quick-preview-button';
+        btnElement.textContent = button.text;
+        previewButtons.appendChild(btnElement);
+    });
+    
+    if (data.buttons.length === 0) {
+        previewButtons.innerHTML = '<em class="text-muted">Кнопки не созданы</em>';
+    }
+    
+    results.style.display = 'block';
+}
+
+async function saveQuickLinkSetup() {
+    const botId = document.getElementById('quickLinkSetupModal').getAttribute('data-bot-id');
+    
+    try {
+        const config = buildQuickConfig();
+        
+        const response = await fetch(`/api/v2/link-transformation/${botId}/config`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(config)
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            // Show success message
+            const modal = bootstrap.Modal.getInstance(document.getElementById('quickLinkSetupModal'));
+            if (modal) {
+                modal.hide();
+            }
+            
+            // Show success notification
+            if (window.showNotification) {
+                window.showNotification('✅ Настройки ссылок сохранены!', 'success');
+            } else {
+                alert('✅ Настройки ссылок сохранены!');
+            }
+            
+            // Reload page or update UI
+            window.location.reload();
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        console.error('Save error:', error);
+        alert('Ошибка сохранения: ' + error.message);
+    }
+}
+
+// Global function to open quick link setup
+window.openQuickLinkSetup = function(botId) {
+    const modal = document.getElementById('quickLinkSetupModal');
+    if (modal) {
+        modal.setAttribute('data-bot-id', botId);
+        
+        // Load current configuration if available
+        loadCurrentQuickConfig(botId);
+        
+        const modalInstance = bootstrap.Modal.getOrCreateInstance(modal);
+        modalInstance.show();
+    }
+};
+
+async function loadCurrentQuickConfig(botId) {
+    try {
+        const response = await fetch(`/api/v2/link-transformation/${botId}/config`);
+        const result = await response.json();
+        
+        if (result.success) {
+            const config = result.data;
+            
+            // Set enabled state
+            document.getElementById('quickLinkEnabled').checked = config.enabled;
+            
+            // Trigger change event to show/hide options
+            if (config.enabled) {
+                document.getElementById('quickSetupOptions').style.display = 'block';
+                document.getElementById('testSection').style.display = 'block';
+            }
+            
+            // Parse rules and set template checkboxes
+            const rules = config.transformation_rules || [];
+            
+            // Check for Google services
+            const hasGoogleScript = rules.some(r => r.match_value === 'script.google.com');
+            const hasGoogleSheets = rules.some(r => r.match_value && r.match_value.includes('docs.google.com/spreadsheets'));
+            if (hasGoogleScript || hasGoogleSheets) {
+                document.getElementById('template_google').checked = true;
+                document.querySelector('[data-template="google"]').classList.add('selected');
+            }
+            
+            // Check for GitHub
+            const hasGitHub = rules.some(r => r.match_value === 'github.com');
+            if (hasGitHub) {
+                document.getElementById('template_github').checked = true;
+                document.querySelector('[data-template="github"]').classList.add('selected');
+            }
+            
+            // Check for Markdown links
+            const hasMarkdown = rules.some(r => r.match_type === 'markdown_link');
+            if (hasMarkdown) {
+                document.getElementById('template_markdown').checked = true;
+                document.querySelector('[data-template="markdown"]').classList.add('selected');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading current config:', error);
+    }
+}
+</script>
+
+

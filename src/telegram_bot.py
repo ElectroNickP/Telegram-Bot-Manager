@@ -8,12 +8,130 @@ import openai
 from aiogram import Bot, Dispatcher, types
 from aiogram.client.bot import DefaultBotProperties
 from aiogram.filters import Command
-from aiogram.types import FSInputFile
+from aiogram.types import FSInputFile, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.token import validate_token
 
 from config_manager import CONVERSATIONS, CONVERSATIONS_LOCK, OPENAI_LOCK
 
+# Initialize logger first
 logger = logging.getLogger(__name__)
+
+# Import Link Transformation functionality
+try:
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    from core.domain.link_transformation import LinkTransformationConfig
+    from core.usecases.link_transformation import LinkTransformationService
+    
+    # Initialize link transformation service
+    link_transformation_service = LinkTransformationService()
+    LINK_TRANSFORMATION_AVAILABLE = True
+    logger.info("✅ Link transformation service initialized")
+except Exception as e:
+    logger.warning(f"⚠️ Link transformation not available: {e}")
+    link_transformation_service = None
+    LINK_TRANSFORMATION_AVAILABLE = False
+
+
+async def send_message_with_link_transformation(message, text, bot_config, parse_mode=None):
+    """
+    Send message with link-to-button transformation if enabled.
+    
+    Args:
+        message: Telegram message object to reply to
+        text: Text content to send
+        bot_config: Bot configuration containing link transformation settings
+        parse_mode: Telegram parse mode (HTML, Markdown, etc.)
+    """
+    try:
+        # Check if link transformation is available and enabled
+        if (LINK_TRANSFORMATION_AVAILABLE and 
+            bot_config.get('link_transformation', {}).get('enabled', False)):
+            
+            # Get link transformation config
+            link_config_data = bot_config.get('link_transformation', {})
+            link_config = LinkTransformationConfig.from_dict(link_config_data)
+            
+            # Only process AI responses if configured
+            if link_config.process_ai_responses:
+                logger.info("🔗 Processing links for transformation...")
+                
+                # Transform links to buttons
+                result = link_transformation_service.process_message(text, link_config)
+                
+                if result.transformations_count > 0 and result.buttons:
+                    logger.info(f"✅ Transformed {result.transformations_count} links into {len(result.buttons)} buttons")
+                    
+                    # Create inline keyboard with buttons
+                    keyboard_markup = create_inline_keyboard(
+                        result.buttons, 
+                        link_config.button_layout
+                    )
+                    
+                    # Send message with buttons
+                    await message.reply(
+                        result.processed_text or "📎 Ссылки преобразованы в кнопки:",
+                        reply_markup=keyboard_markup,
+                        parse_mode=parse_mode
+                    )
+                    return
+                else:
+                    logger.debug("🔗 No links transformed, sending normal message")
+    
+    except Exception as e:
+        logger.error(f"❌ Error in link transformation: {e}")
+        # Fall back to normal message sending on error
+    
+    # Send normal message without transformation
+    await message.reply(text, parse_mode=parse_mode)
+
+
+def create_inline_keyboard(buttons, layout="vertical"):
+    """
+    Create Telegram inline keyboard markup from button list.
+    
+    Args:
+        buttons: List of button dicts with 'text' and 'url' keys
+        layout: Button layout - "vertical", "horizontal", or "auto"
+        
+    Returns:
+        InlineKeyboardMarkup object
+    """
+    if not buttons:
+        return None
+    
+    try:
+        # Create button objects
+        inline_buttons = []
+        for button in buttons:
+            inline_button = InlineKeyboardButton(
+                text=button["text"], 
+                url=button["url"]
+            )
+            inline_buttons.append(inline_button)
+        
+        # Organize buttons by layout
+        if layout == "horizontal":
+            # All buttons in one row (max 8 per Telegram limits)
+            rows = [inline_buttons[:8]]
+        elif layout == "vertical":
+            # Each button in its own row
+            rows = [[button] for button in inline_buttons]
+        elif layout == "auto":
+            # Auto-arrange: 2 buttons per row, last row can have 1
+            rows = []
+            for i in range(0, len(inline_buttons), 2):
+                row = inline_buttons[i:i+2]
+                rows.append(row)
+        else:
+            # Default to vertical
+            rows = [[button] for button in inline_buttons]
+        
+        return InlineKeyboardMarkup(inline_keyboard=rows)
+        
+    except Exception as e:
+        logger.error(f"❌ Error creating inline keyboard: {e}")
+        return None
 
 
 def validate_telegram_token(token):
@@ -540,6 +658,8 @@ async def aiogram_bot(config, stop_event):
         voice_model = config.get("voice_model", "tts-1")
         voice_type = config.get("voice_type", "alloy")
 
+        # 8. Подготавливаем голосовой ответ (если включен)
+        audio_file_path = None
         if enable_voice_responses:
             logger.info("🎤 Генерирую голосовой ответ...")
             try:
@@ -548,33 +668,37 @@ async def aiogram_bot(config, stop_event):
                 audio_file_path = await text_to_speech(response, config, voice_model, voice_type)
                 logger.info(f"🔧 text_to_speech завершен, результат: {audio_file_path}")
 
-                if audio_file_path and os.path.exists(audio_file_path):
-                    logger.info(f"📤 Отправляю текстовый ответ: {response[:50]}...")
-                    # Отправляем и текстовый и голосовой ответ
-                    await message.reply(response)
-
-                    logger.info(f"📤 Отправляю голосовой ответ: {audio_file_path}")
-                    # Отправляем голосовое сообщение используя FSInputFile
-                    voice_file = FSInputFile(audio_file_path)
-                    await message.reply_voice(voice_file)
-
-                    logger.info("🎵 Голосовой ответ отправлен пользователю")
-
-                    # Удаляем временный файл
-                    os.remove(audio_file_path)
-                    logger.info(f"🗑️ Удален временный голосовой файл: {audio_file_path}")
-                else:
-                    logger.warning("⚠️ Не удалось создать голосовой файл, отправляю только текст")
-                    await message.reply(response)
+                # Проверяем что файл создался корректно
+                if not audio_file_path or not os.path.exists(audio_file_path):
+                    logger.warning("⚠️ Не удалось создать голосовой файл")
+                    audio_file_path = None
 
             except Exception as e:
                 logger.error(f"❌ Ошибка при создании голосового ответа: {e}")
-                # В случае ошибки отправляем текстовый ответ
-                await message.reply(response)
-        else:
-            # Обычный текстовый ответ
-            logger.info(f"📤 Отправляю текстовый ответ: {response[:50]}...")
-            await message.reply(response)
+                audio_file_path = None
+
+        # 9. Отправляем ответ (текст + голос если есть) - ТОЛЬКО ОДИН РАЗ
+        logger.info(f"📤 Отправляю {'текстовый + голосовой' if audio_file_path else 'текстовый'} ответ: {response[:50]}...")
+        await send_message_with_link_transformation(message, response, config)
+
+        # 10. Если есть голосовой файл - отправляем его отдельно
+        if audio_file_path:
+            try:
+                logger.info(f"📤 Отправляю голосовой ответ: {audio_file_path}")
+                voice_file = FSInputFile(audio_file_path)
+                await message.reply_voice(voice_file)
+                logger.info("🎵 Голосовой ответ отправлен пользователю")
+
+                # Удаляем временный файл
+                os.remove(audio_file_path)
+                logger.info(f"🗑️ Удален временный голосовой файл: {audio_file_path}")
+            except Exception as e:
+                logger.error(f"❌ Ошибка при отправке голосового ответа: {e}")
+                # Файл все равно удаляем
+                try:
+                    os.remove(audio_file_path)
+                except:
+                    pass
 
         logger.info("📤 Ответ отправлен пользователю")
 

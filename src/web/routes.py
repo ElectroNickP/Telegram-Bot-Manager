@@ -161,3 +161,15 @@ def bot_detail_page(bot_id):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+

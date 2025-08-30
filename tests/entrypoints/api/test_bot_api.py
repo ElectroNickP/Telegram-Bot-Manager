@@ -704,3 +704,15 @@ class TestBotAPIDocumentation:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
