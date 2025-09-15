@@ -53,7 +53,7 @@ def start_application():
         return True
 
     # Запускаем приложение в фоне
-    cmd = "cd src && python app.py > ../logs/app.log 2>&1 &"
+    cmd = "cd src && python3 app.py > ../logs/app.log 2>&1 &"
     success = run_command(cmd, "Запуск приложения")
 
     if success:
@@ -81,7 +81,7 @@ def run_test_suite(test_type, description):
     os.makedirs("reports", exist_ok=True)
 
     # Команда для запуска тестов
-    cmd = f"python -m pytest tests/{test_type}/ -v --tb=short --html=reports/{test_type}_report.html --self-contained-html"
+    cmd = f"python3 -m pytest tests/{test_type}/ -v --tb=short --html=reports/{test_type}_report.html --self-contained-html"
 
     success = run_command(cmd, f"Запуск {test_type} тестов")
 
@@ -98,7 +98,7 @@ def run_coverage_test():
     print("\n📊 Тестирование покрытия кода")
     print("=" * 60)
 
-    cmd = "python -m pytest tests/ -v --cov=src --cov-report=html:htmlcov --cov-report=term-missing"
+    cmd = "python3 -m pytest tests/ -v --cov=src --cov-report=html:htmlcov --cov-report=term-missing"
 
     success = run_command(cmd, "Запуск тестов с покрытием")
 

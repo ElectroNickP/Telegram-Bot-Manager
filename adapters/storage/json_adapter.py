@@ -192,10 +192,118 @@ class JsonConfigStorageAdapter(ConfigStoragePort):
             del config["conversations"][conversation_key]
             self._save_config(config)
 
+    # User Session Management Methods
+    def set_user_session(self, session_id: str, session_data: Dict[str, Any]) -> None:
+        """Set user session data."""
+        config = self._load_config()
+        if "user_sessions" not in config:
+            config["user_sessions"] = {}
+        
+        config["user_sessions"][session_id] = session_data
+        self._save_config(config)
+        logger.debug(f"User session saved: {session_id}")
+
+    def get_user_session(self, session_id: str) -> Optional[Dict[str, Any]]:
+        """Get user session data."""
+        config = self._load_config()
+        user_sessions = config.get("user_sessions", {})
+        return user_sessions.get(session_id)
+
+    def delete_user_session(self, session_id: str) -> None:
+        """Delete user session."""
+        config = self._load_config()
+        if "user_sessions" in config and session_id in config["user_sessions"]:
+            del config["user_sessions"][session_id]
+            self._save_config(config)
+            logger.debug(f"User session deleted: {session_id}")
+
+    def get_user_sessions_for_bot(self, bot_id: int) -> list[Dict[str, Any]]:
+        """Get all user sessions for a bot."""
+        config = self._load_config()
+        user_sessions = config.get("user_sessions", {})
+        return [
+            session_data for session_data in user_sessions.values()
+            if session_data.get("bot_id") == bot_id
+        ]
+
+    def get_user_sessions_for_user(self, bot_id: int, user_id: int) -> list[Dict[str, Any]]:
+        """Get all user sessions for a specific user."""
+        config = self._load_config()
+        user_sessions = config.get("user_sessions", {})
+        return [
+            session_data for session_data in user_sessions.values()
+            if (session_data.get("bot_id") == bot_id and
+                (session_data.get("initiator", {}).get("user_id") == user_id or
+                 session_data.get("target", {}).get("user_id") == user_id))
+        ]
+
+    def add_session_message(self, session_id: str, message_data: Dict[str, Any]) -> None:
+        """Add message to session."""
+        config = self._load_config()
+        if "session_messages" not in config:
+            config["session_messages"] = {}
+        
+        if session_id not in config["session_messages"]:
+            config["session_messages"][session_id] = []
+        
+        config["session_messages"][session_id].append(message_data)
+        self._save_config(config)
+        logger.debug(f"Message added to session: {session_id}")
+
+    def get_session_messages(self, session_id: str, limit: int = 50) -> list[Dict[str, Any]]:
+        """Get messages from session."""
+        config = self._load_config()
+        session_messages = config.get("session_messages", {})
+        messages = session_messages.get(session_id, [])
+        return messages[-limit:] if messages else []
+
+    def get_online_users_for_bot(self, bot_id: int) -> list[Dict[str, Any]]:
+        """Get online users for a bot."""
+        config = self._load_config()
+        user_sessions = config.get("user_sessions", {})
+        recent_users = config.get("recent_users", {})
+        
+        # Get users who have been active recently (within last 30 minutes)
+        from datetime import datetime, timedelta
+        cutoff_time = datetime.now() - timedelta(minutes=30)
+        
+        online_users = []
+        for user_id_str, user_data in recent_users.items():
+            if user_data.get("bot_id") == bot_id:
+                last_seen_str = user_data.get("last_seen")
+                if last_seen_str:
+                    try:
+                        last_seen = datetime.fromisoformat(last_seen_str)
+                        if last_seen > cutoff_time:
+                            # Remove last_seen and bot_id from user data for return
+                            user_info = {k: v for k, v in user_data.items() 
+                                       if k not in ["last_seen", "bot_id"]}
+                            online_users.append(user_info)
+                    except ValueError:
+                        continue
+        
+        return online_users
+
+    def update_user_activity(self, bot_id: int, user_data: Dict[str, Any]) -> None:
+        """Update user activity timestamp."""
+        config = self._load_config()
+        if "recent_users" not in config:
+            config["recent_users"] = {}
+        
+        user_id = user_data.get("user_id")
+        if user_id:
+            config["recent_users"][str(user_id)] = {
+                **user_data,
+                "bot_id": bot_id,
+                "last_seen": datetime.now().isoformat()
+            }
+            self._save_config(config)
+
     def invalidate_cache(self) -> None:
         """Invalidate internal cache."""
         self._cache = None
         logger.debug("Cache invalidated")
+
 
 
 

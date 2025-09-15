@@ -32,6 +32,36 @@ except Exception as e:
     link_transformation_service = None
     LINK_TRANSFORMATION_AVAILABLE = False
 
+# Import User Session functionality
+try:
+    from core.domain.user_session import UserInfo
+    from core.usecases.user_session_management import UserSessionManagementUseCase
+    from core.services.user_session_service import UserSessionService
+    from adapters.storage.json_adapter import JsonConfigStorageAdapter
+    
+    USER_SESSION_AVAILABLE = True
+    user_session_service = None  # Will be initialized lazily
+    logger.info("✅ User session imports successful")
+except Exception as e:
+    logger.warning(f"⚠️ User session not available: {e}")
+    user_session_service = None
+    USER_SESSION_AVAILABLE = False
+
+
+def get_user_session_service():
+    """Lazy initialization of user session service."""
+    global user_session_service
+    if USER_SESSION_AVAILABLE and user_session_service is None:
+        try:
+            storage_adapter = JsonConfigStorageAdapter()
+            session_use_case = UserSessionManagementUseCase(storage_adapter)
+            user_session_service = UserSessionService(session_use_case)
+            logger.info("✅ User session service initialized")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize user session service: {e}")
+            return None
+    return user_session_service
+
 
 async def send_message_with_link_transformation(message, text, bot_config, parse_mode=None):
     """
@@ -499,6 +529,42 @@ async def aiogram_bot(config, stop_event):
 
         await message.answer(text)
 
+    @dp.message(Command(commands=["connect"]))
+    async def cmd_connect(message: types.Message):
+        """Handle /connect command for user sessions."""
+        session_service = get_user_session_service()
+        if session_service:
+            bot_id = config.get("bot_id", 1)  # Extract bot_id from config
+            await session_service.handle_connect_command(bot, message, bot_id)
+        else:
+            await message.reply("❌ Функция подключения к пользователям недоступна.")
+
+    @dp.message(Command(commands=["exit"]))
+    async def cmd_exit(message: types.Message):
+        """Handle /exit command to end user session."""
+        session_service = get_user_session_service()
+        if session_service:
+            bot_id = config.get("bot_id", 1)  # Extract bot_id from config
+            await session_service.handle_exit_command(bot, message, bot_id)
+        else:
+            await message.reply("❌ Функция сессий недоступна.")
+
+    @dp.callback_query()
+    async def handle_callback_query(callback_query: types.CallbackQuery):
+        """Handle callback queries for user sessions."""
+        session_service = get_user_session_service()
+        if session_service:
+            data = callback_query.data
+            if data.startswith("connect_") or data.startswith("session_"):
+                bot_id = config.get("bot_id", 1)  # Extract bot_id from config
+                
+                if data.startswith("connect_"):
+                    await session_service.handle_user_selection(bot, callback_query, bot_id)
+                elif data.startswith("session_"):
+                    await session_service.handle_session_response(bot, callback_query)
+        
+        await callback_query.answer()
+
     @dp.message()
     async def handle_group_message(message: types.Message):
         """Обрабатывает текстовые и голосовые сообщения в ЛС и группах."""
@@ -527,6 +593,15 @@ async def aiogram_bot(config, stop_event):
                 context_limit = config.get("group_context_limit", GROUP_CONTEXT_MESSAGES_LIMIT)
                 add_message_to_cache(message.chat.id, message_data, context_limit)
 
+        # 0. Check if user is in an active session (for private messages only)
+        if message.chat.type == "private":
+            session_service = get_user_session_service()
+            if session_service:
+                bot_id = config.get("bot_id", 1)  # Extract bot_id from config
+                message_routed = await session_service.route_session_message(bot, message, bot_id)
+                if message_routed:
+                    return  # Message was handled by session routing, don't process normally
+
         # 1. Определяем, должен ли бот реагировать
         should_process = False
 
@@ -544,6 +619,19 @@ async def aiogram_bot(config, stop_event):
         
         # 2.1. Получаем информацию о пользователе/группе для сохранения
         user_info = get_user_info(message)
+        
+        # 2.2. Register user as online for session system (private messages only)
+        if message.chat.type == "private":
+            session_service = get_user_session_service()
+            if session_service:
+                bot_id = config.get("bot_id", 1)  # Extract bot_id from config
+                user_info_session = UserInfo(
+                    user_id=message.from_user.id,
+                    username=message.from_user.username,
+                    first_name=message.from_user.first_name,
+                    last_name=message.from_user.last_name
+                )
+                session_service.register_user_online(bot_id, user_info_session)
 
         # 3. Получаем текст от пользователя (из текста или голоса)
         user_prompt = ""

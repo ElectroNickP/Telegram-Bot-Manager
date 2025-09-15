@@ -269,6 +269,8 @@ def create_bot_v2():
         with cm.BOT_CONFIGS_LOCK:
             bot_id = cm.NEXT_BOT_ID
             cm.NEXT_BOT_ID += 1
+            # Add bot_id to config for session system
+            data["bot_id"] = bot_id
 
             bot_entry = {
                 "id": bot_id,

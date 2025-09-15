@@ -142,6 +142,8 @@ def get_bot_config(bot_id):
 def add_bot_config(bot_id, config):
     """Добавить конфигурацию бота"""
     with BOT_CONFIGS_LOCK:
+        # Add bot_id to config for session system
+        config["bot_id"] = bot_id
         BOT_CONFIGS[bot_id] = {
             "id": bot_id,
             "config": config,

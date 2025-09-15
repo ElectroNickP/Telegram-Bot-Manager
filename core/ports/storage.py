@@ -138,6 +138,100 @@ class ConfigStoragePort(Protocol):
         """
         ...
 
+    # User Session Management Methods
+    def set_user_session(self, session_id: str, session_data: dict[str, Any]) -> None:
+        """Set user session data.
+
+        Args:
+            session_id: Session ID
+            session_data: Session data
+        """
+        ...
+
+    def get_user_session(self, session_id: str) -> dict[str, Any] | None:
+        """Get user session data.
+
+        Args:
+            session_id: Session ID
+
+        Returns:
+            Session data or None if not found
+        """
+        ...
+
+    def delete_user_session(self, session_id: str) -> None:
+        """Delete user session.
+
+        Args:
+            session_id: Session ID
+        """
+        ...
+
+    def get_user_sessions_for_bot(self, bot_id: int) -> list[dict[str, Any]]:
+        """Get all user sessions for a bot.
+
+        Args:
+            bot_id: Bot ID
+
+        Returns:
+            List of session data
+        """
+        ...
+
+    def get_user_sessions_for_user(self, bot_id: int, user_id: int) -> list[dict[str, Any]]:
+        """Get all user sessions for a specific user.
+
+        Args:
+            bot_id: Bot ID
+            user_id: User ID
+
+        Returns:
+            List of session data
+        """
+        ...
+
+    def add_session_message(self, session_id: str, message_data: dict[str, Any]) -> None:
+        """Add message to session.
+
+        Args:
+            session_id: Session ID
+            message_data: Message data
+        """
+        ...
+
+    def get_session_messages(self, session_id: str, limit: int = 50) -> list[dict[str, Any]]:
+        """Get messages from session.
+
+        Args:
+            session_id: Session ID
+            limit: Maximum number of messages to return
+
+        Returns:
+            List of message data
+        """
+        ...
+
+    def get_online_users_for_bot(self, bot_id: int) -> list[dict[str, Any]]:
+        """Get online users for a bot.
+
+        Args:
+            bot_id: Bot ID
+
+        Returns:
+            List of user data
+        """
+        ...
+
+    def update_user_activity(self, bot_id: int, user_data: dict[str, Any]) -> None:
+        """Update user activity timestamp.
+
+        Args:
+            bot_id: Bot ID
+            user_data: User data
+        """
+        ...
+
+
 
 
 

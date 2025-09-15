@@ -450,7 +450,7 @@ cd src
 
 # Start application in background
 echo "🚀 Starting application..."
-nohup python app.py > ../logs/app_restart.log 2>&1 &
+nohup python3 app.py > ../logs/app_restart.log 2>&1 &
 
 # Get PID
 APP_PID=$!
