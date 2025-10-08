@@ -1,352 +1,446 @@
-# 🤖 AI Assistant Guide for Telegram Bot Manager
+# 🤖 LIVE AI CONTEXT - Always Up-to-Date
 
-**Version:** 1.0  
-**Last Updated:** 2025-10-09  
-**Project:** Telegram Bot Manager
+> **⚡ Автоматически обновляется** при каждом коммите  
+> **✅ Проверяется** на соответствие реальному коду  
+> **🎯 Гарантирует** актуальность информации
 
----
-
-## 🎯 Quick Start for AI
-
-Привет, AI! Ты работаешь с профессиональным Telegram Bot Manager проектом.
-
-### 📖 ЧТО ПРОЧИТАТЬ СНАЧАЛА (в порядке приоритета):
-
-1. **`CONTEXT.md`** ⭐⭐⭐ - Главный контекст проекта (16KB)
-   - Архитектура (Hexagonal/Clean)
-   - Code conventions
-   - Data flows
-   - Common patterns
-
-2. **`MODULE_MAP.md`** ⭐⭐⭐ - Карта навигации (13KB)
-   - Где что находится
-   - Поиск по фичам
-   - Поиск по типам файлов
-   - Поиск по ключевым словам
-
-3. **`ACTION_PLAN.md`** ⭐⭐ - Текущие задачи (13KB)
-   - Что нужно сделать
-   - Приоритеты (CRITICAL, HIGH, MEDIUM)
-   - Статус задач
-
-4. **`docs/AI_QUICK_START.md`** ⭐ - 5-минутное введение
-   - Быстрое восстановление контекста
-   - Частые задачи
-   - Где что искать
-
-5. **`docs/AI_TROUBLESHOOTING.md`** - Решение проблем
-   - Частые ошибки
-   - Как чинить
-   - Debug tips
+**Последняя валидация:** Автоматически при `git commit` (см. `.ai/hooks/pre-commit-meta-sync`)
 
 ---
 
-## 🧭 НАВИГАЦИЯ ПО ПРОЕКТУ
+## 🚀 Quick Start для AI
 
-### Архитектура: Hexagonal (Ports & Adapters)
-
-```
-┌─────────────────────────────────────────────────┐
-│          EXTERNAL WORLD                          │
-│  (Telegram, OpenAI, HTTP, File System)         │
-└─────────────────┬───────────────────────────────┘
-                  │
-┌─────────────────▼───────────────────────────────┐
-│          ADAPTERS (Outer Layer)                  │
-│  - adapters/telegram/   (Telegram API)          │
-│  - adapters/storage/    (File storage)          │
-│  - adapters/updater/    (Git updates)           │
-│  - src/api/             (REST API - legacy)     │
-└─────────────────┬───────────────────────────────┘
-                  │
-┌─────────────────▼───────────────────────────────┐
-│          PORTS (Interfaces)                      │
-│  - core/ports/storage.py                        │
-│  - core/ports/telegram.py                       │
-└─────────────────┬───────────────────────────────┘
-                  │
-┌─────────────────▼───────────────────────────────┐
-│          USE CASES (Application Logic)           │
-│  - core/usecases/bot_management.py              │
-│  - core/usecases/conversation_management.py     │
-│  - core/usecases/user_session_management.py     │
-└─────────────────┬───────────────────────────────┘
-                  │
-┌─────────────────▼───────────────────────────────┐
-│          DOMAIN (Core Business Logic)            │
-│  - core/domain/bot.py                           │
-│  - core/domain/conversation.py                  │
-│  - core/domain/user_session.py                  │
-│  - core/services/  (Domain services)            │
-└─────────────────────────────────────────────────┘
-```
-
-**ПРАВИЛО:** Зависимости идут ВНУТРЬ (к domain). Domain не знает о внешнем мире!
-
----
-
-## 🔍 AI-КОММЕНТАРИИ В КОДЕ
-
-### ⚡ NEW: Meta-файлы вместо inline комментариев!
-
-**Код остается чистым!** Вся архитектурная информация в `.meta/` файлах.
-
-#### Как работает:
-
-```python
-# Файл: core/domain/user_session.py
-"""
-User Session Domain Entity
-
-For architecture, connections, warnings see: .meta/core/domain/user_session.md
-"""
-
-class UserSession:
-    # Чистый код, никаких AI-комментариев!
-    pass
-```
-
-```markdown
-# Файл: .meta/core/domain/user_session.md
-- Критичность: HIGH
-- Используется в: session_service, telegram_bot
-- Warnings: не менять структуру
-- Hints: тесты в tests/unit/
-```
-
-#### Где искать meta:
-
-1. **Master Index:** `.meta/INDEX.md` - список всех meta-файлов
-2. **По файлу:** Если работаешь с `core/domain/user_session.py` → читай `.meta/core/domain/user_session.md`
-3. **По фиче:** В INDEX.md есть группировка по фичам
-
-#### Преимущества:
-
-- ✅ **Код чистый** - не захламлен комментариями
-- ✅ **Мета централизована** - вся инфо в одном месте  
-- ✅ **Легко обновлять** - отдельный файл
-- ✅ **Не мешает разработчикам** - опционально
-
----
-
-## 🗂️ AI-КОММЕНТАРИИ (Legacy - deprecated)
-
-**Note:** Используй `.meta/` файлы вместо inline комментариев!
-
-Старый формат (сохранен для reference):
-
-#### `AI-CRITICAL` 
-**Критичный код, изменения влияют на весь проект**
-```python
-# AI-CRITICAL: Центральная точка управления всеми ботами
-# Изменения здесь распространяются на 50+ файлов
-```
-
-#### `AI-LINK`
-**Связи с другими модулями**
-```python
-# AI-LINK: core/services/user_session_service.py:handle_connect_command()
-# AI-LINK: Вызывается из src/telegram_bot.py:cmd_connect() (line 520)
-```
-
-#### `AI-WARNING`
-**Опасные места где легко что-то сломать**
-```python
-# AI-WARNING: НЕ изменять сигнатуру! Используется в 15+ местах
-# AI-WARNING: Изменение структуры bot_config сломает существующие боты
-```
-
-#### `AI-HINT`
-**Полезные подсказки для типичных задач**
-```python
-# AI-HINT: Добавляя новый endpoint → src/api/v2/
-# AI-HINT: Новую domain entity → core/domain/
-# AI-HINT: Структура bot_config см. CONTEXT.md раздел "Data Models"
-```
-
-#### `AI-TODO`
-**Запланированные изменения**
-```python
-# AI-TODO: Рефакторинг в Phase 5 (см. ACTION_PLAN.md #7)
-# AI-TODO: Миграция на PostgreSQL (см. MIGRATION_PLAN.md)
-```
-
-#### `AI-DEPRECATED`
-**Устаревший код**
-```python
-# AI-DEPRECATED: Используй new_function() вместо
-# AI-DEPRECATED: Удалить в v4.0 (см. MIGRATION_PLAN.md)
-```
-
-#### `AI-CONTEXT`
-**Архитектурный контекст**
-```python
-# AI-CONTEXT: Hexagonal Architecture - Domain Layer
-# AI-CONTEXT: NO external dependencies allowed here!
-```
-
----
-
-## 📍 ГДЕ ЧТО ДОБАВЛЯТЬ
-
-### Новая функция/фича:
-1. **Domain Entity** → `core/domain/my_entity.py`
-2. **Use Case** → `core/usecases/my_feature.py`
-3. **Port (если нужен I/O)** → `core/ports/my_port.py`
-4. **Adapter** → `adapters/my_adapter.py`
-5. **API Endpoint** → `src/api/v2/my_feature.py`
-6. **Tests** → `tests/unit/test_my_feature.py`
-7. **Docs** → Обнови `MODULE_MAP.md`
-
-### Новый API endpoint:
-```
-src/api/v2/my_endpoint.py  (создай)
-src/api/v2/__init__.py     (зарегистрируй blueprint)
-MODULE_MAP.md              (добавь в раздел "API Endpoints")
-```
-
-### Новый Telegram command:
-```
-src/telegram_bot.py        (добавь handler)
-core/services/             (бизнес-логика если сложная)
-USER_GUIDE.md              (документируй для пользователей)
-```
-
-### Изменение структуры данных:
-```
-1. core/domain/            (обнови entity)
-2. adapters/storage/       (обнови storage adapter)
-3. Миграция данных (если нужна)
-4. CONTEXT.md              (обнови "Data Models")
-5. Тесты                   (обнови)
-```
-
----
-
-## ⚠️ ОПАСНЫЕ ЗОНЫ
-
-### 🚨 Очень опасно (тестируй тщательно):
-- `src/config_manager.py` - все боты зависят от этого
-- `bot_configs.json` структура - изменения нужна миграция
-- `adapters/storage/json_adapter.py` - критично для сохранения данных
-- `src/app.py` - main Flask app
-- `core/domain/*.py` - изменения в domain entities влияют на весь проект
-
-### ⚠️ Осторожно:
-- API endpoints - backward compatibility!
-- Telegram handlers - не ломай существующие команды
-- Storage methods - не потеряй данные пользователей
-
----
-
-## 🔧 WORKFLOW
-
-### Перед изменениями:
-1. Найди файл в `MODULE_MAP.md`
-2. Прочитай `AI-LINK` комментарии - какие файлы связаны?
-3. Прочитай `AI-WARNING` - есть ли опасности?
-4. Проверь `AI-TODO` - может уже запланировано?
-
-### При изменениях:
-1. Следуй Hexagonal Architecture (зависимости внутрь!)
-2. Добавь AI-комментарии к новому коду
-3. Обнови связанные файлы (по `AI-LINK`)
-4. Обнови `MODULE_MAP.md` если добавил новые файлы
-
-### После изменений:
-1. Запусти тесты: `pytest`
-2. Проверь линтер: `ruff check`
-3. Обнови документацию если нужно
-4. Убедись что AI-комментарии актуальны
-
----
-
-## 🧪 ТЕСТИРОВАНИЕ
+### Проверить актуальность контекста
 
 ```bash
-# Все тесты
-pytest
+# Валидация + генерация свежего контекста
+python3 .ai/tools/validate-context.py --generate
 
-# Только unit тесты
-pytest tests/unit/
+# Только валидация
+python3 .ai/tools/validate-context.py
+```
 
-# С покрытием
-pytest --cov=src --cov=core
+**Результат:**
+- ✅ Все файлы на месте
+- ✅ Импорты работают
+- ✅ Фичи существуют
+- ✅ Нет "зомби-кода"
 
-# Конкретный файл
-pytest tests/unit/test_user_session.py -v
+---
+
+## 📦 Текущая структура проекта (LIVE)
+
+### Features (src/features/)
+
+```
+✅ user_sessions/          P2P-сессии между пользователями
+   ├─ feature.py           UserSessionsFeature
+   ├─ Handlers:            /connect, /exit, callbacks
+   └─ API:                 /api/v2/sessions/*
+
+✅ voice_messages/         Транскрибация голоса (Whisper)
+   ├─ feature.py           VoiceMessagesFeature
+   ├─ Whisper API          OpenAI transcription
+   └─ API:                 /api/v2/voice/*
+
+✅ link_transformation/    URL → Inline Buttons
+   ├─ feature.py           LinkTransformationFeature
+   ├─ URL parsing          Markdown links, domain rules
+   └─ API:                 /api/v2/links/*
+```
+
+### Core (core/)
+
+```
+✅ features/               Feature system
+   ├─ base.py             Feature, FeatureMetadata
+   ├─ registry.py         FeatureRegistry (lifecycle)
+   └─ __init__.py         
+
+✅ domain/                 Domain entities
+   ├─ bot.py              Bot configuration
+   ├─ user_session.py     UserSession, UserInfo
+   └─ link_transformation.py  LinkTransformationConfig
+
+✅ usecases/               Business logic
+   ├─ bot_management.py
+   ├─ conversation_management.py
+   ├─ user_session_management.py
+   └─ link_transformation.py
+
+✅ services/               Application services
+   ├─ conversation_service.py
+   └─ user_session_service.py
+
+✅ ports/                  Interfaces
+   └─ storage.py          ConfigStoragePort
+```
+
+### API (src/api/)
+
+```
+✅ v1/                     Legacy API
+   ├─ bots.py
+   ├─ system.py
+   └─ admin.py
+
+✅ v2/                     Modern API
+   ├─ bots.py
+   ├─ system.py
+   ├─ telegram.py
+   ├─ uploads.py
+   └─ link_transformation.py
+
+Features также регистрируют свои API routes автоматически!
 ```
 
 ---
 
-## 📚 ВАЖНЫЕ ФАЙЛЫ ДЛЯ AI
+## 🎯 Как работать с проектом
 
-### Обязательно знать:
-- `CONTEXT.md` - главный контекст
-- `MODULE_MAP.md` - навигация
-- `ACTION_PLAN.md` - задачи
-- `DEPENDENCY_GRAPH.md` - связи между модулями
+### 1. Добавить новую фичу
 
-### Полезно знать:
-- `docs/AI_TROUBLESHOOTING.md` - решение проблем
-- `docs/ARCHITECTURE_BRIEF.md` - краткая архитектура
-- `CHANGELOG.md` - история изменений
+```python
+# 1. Создай файл: src/features/my_feature/feature.py
+
+from core.features.base import Feature, FeatureMetadata
+from aiogram import types
+from aiogram.filters import Command
+
+class MyFeature(Feature):
+    """Моя новая фича"""
+    
+    def metadata(self) -> FeatureMetadata:
+        return FeatureMetadata(
+            name="my_feature",
+            version="1.0.0",
+            description="Делает что-то крутое",
+            dependencies=[],  # Если нужны другие фичи
+            enabled=True,
+            critical=False,  # False = не остановит приложение при ошибке
+            tags=["telegram", "cool"]
+        )
+    
+    async def initialize(self) -> bool:
+        """Инициализация"""
+        # Настройка сервисов, подключений и т.д.
+        logger.info("MyFeature initialized")
+        return True
+    
+    async def shutdown(self) -> None:
+        """Очистка ресурсов"""
+        logger.info("MyFeature shutdown")
+    
+    def register_telegram_handlers(self, dp, bot):
+        """Регистрация Telegram команд"""
+        
+        @dp.message(Command("mycommand"))
+        async def cmd_my(message: types.Message):
+            await message.reply("Работает! 🎉")
+    
+    def register_api_routes(self, app):
+        """Регистрация Flask API"""
+        from flask import Blueprint, jsonify
+        
+        bp = Blueprint('my_feature', __name__, url_prefix='/api/v2/my_feature')
+        
+        @bp.route('/status')
+        def status():
+            return jsonify({"status": "ok"})
+        
+        app.register_blueprint(bp)
+    
+    async def health_check(self) -> Dict:
+        """Health check"""
+        return {"status": "healthy"}
+
+
+# 2. Добавь в src/features/__init__.py:
+from .my_feature import MyFeature
+__all__ = [..., "MyFeature"]
+
+
+# 3. Зарегистрируй в src/telegram_bot.py (в функции aiogram_bot):
+feature_registry.register(MyFeature())
+
+
+# 4. Готово! Фича автоматически:
+#    - Инициализируется при старте бота
+#    - Регистрирует handlers
+#    - Регистрирует API routes
+#    - Мониторится через health check
+```
+
+### 2. Найти и использовать фичу
+
+```python
+# В любом месте кода:
+
+# Получить фичу
+feature = get_feature('user_sessions')
+
+if feature and feature.service:
+    # Использовать сервис фичи
+    result = await feature.service.handle_connect_command(bot, message, bot_id)
+```
+
+### 3. Отключить фичу
+
+```python
+# В metadata():
+enabled=False  # Фича не будет инициализирована
+```
+
+### 4. Проверить здоровье системы
+
+```python
+# Programmatically:
+health = await feature_registry.health_check_all()
+# Returns: {"overall_status": "healthy", "features": {...}}
+
+# Via API:
+GET /api/v2/system/health
+```
 
 ---
 
-## 💡 ПОЛЕЗНЫЕ КОМАНДЫ
+## 🔍 Где искать что?
+
+### Если нужно изменить...
+
+| Что                          | Где искать                                    |
+|------------------------------|-----------------------------------------------|
+| **Telegram команды**         | `src/features/*/feature.py` → `register_telegram_handlers` |
+| **API endpoints**            | `src/features/*/feature.py` → `register_api_routes` |
+| **Логику сессий**           | `src/features/user_sessions/feature.py`      |
+| **Транскрибацию**           | `src/features/voice_messages/feature.py`     |
+| **Трансформацию ссылок**    | `src/features/link_transformation/feature.py` |
+| **Инициализацию фич**       | `src/telegram_bot.py` → `aiogram_bot()` функция |
+| **Регистрацию API**         | `src/app.py` → `create_app()` функция        |
+| **Домен-модели**            | `core/domain/*.py`                            |
+| **Business logic**          | `core/usecases/*.py`                          |
+| **Хранение данных**         | `adapters/storage/json_adapter.py`            |
+
+### Если появилась ошибка в...
+
+| Симптом                      | Проверь                                       |
+|------------------------------|-----------------------------------------------|
+| **Фича не работает**        | 1. Зарегистрирована? `telegram_bot.py`<br>2. `enabled=True`?<br>3. Логи инициализации |
+| **Команда не отвечает**     | 1. Handlers зарегистрированы?<br>2. Feature initialized?<br>3. Check logs |
+| **API 404**                 | 1. Routes registered? `app.py`<br>2. Blueprint prefix correct?<br>3. Feature enabled? |
+| **Import error**            | 1. Run: `python3 .ai/tools/validate-context.py`<br>2. Check file exists<br>3. Check `__init__.py` |
+
+---
+
+## 🛠️ Инструменты для разработки
+
+### Валидация контекста
 
 ```bash
-# Найти где используется функция
-grep -r "function_name" src/ core/
+# Полная проверка + генерация свежего контекста
+python3 .ai/tools/validate-context.py --generate
 
-# Найти AI-WARNING комментарии
-grep -r "AI-WARNING" .
+# Только валидация (без обновления)
+python3 .ai/tools/validate-context.py
 
-# Найти все TODO
-grep -r "AI-TODO" .
+# Автоматически при коммите (уже настроено)
+git commit -m "..."  # Автоматически обновляет .ai/LIVE_CONTEXT.json
+```
 
-# Проверить импорты
-python3 -c "from core.domain import Bot; print('OK')"
+**Что проверяется:**
+- ✅ Критичные файлы существуют
+- ✅ Фичи соответствуют описанию
+- ✅ Import paths валидны
+- ✅ Функции/классы на своих местах
+- ✅ Нет "зомби-кода" (удаленного но упомянутого)
+- ✅ Контекст свежий
 
-# Запустить app для тестирования
+### Meta-sync (автоматический)
+
+```bash
+# Обновить мета-файлы для критичных файлов
+python3 .ai/tools/meta-sync.py
+
+# Автоматически при коммите (уже настроено)
+git commit -m "..."  # Обновляет .meta/*
+```
+
+### Запуск проекта
+
+```bash
+# Первый запуск (с setup wizard)
 python3 start.py
+
+# Обычный запуск
+source venv/bin/activate
+cd src && python3 app.py
 ```
 
 ---
 
-## 🎯 ЦЕЛИ AI-СИСТЕМЫ
+## ⚠️ Важные предупреждения
 
-Эта система создана чтобы:
-- ✅ AI никогда не терял контекст
-- ✅ AI всегда знал где что находится
-- ✅ AI видел связи между модулями
-- ✅ AI не ломал существующий код случайно
-- ✅ AI мог легко добавлять новые фичи
-- ✅ Документация всегда была актуальной
+### ❌ НЕ делай так:
+
+```python
+# ❌ Прямая инициализация сервисов
+service = UserSessionService(...)  # WRONG!
+
+# ❌ Обращение к фиче без проверки
+feature.service.method()  # Может быть None!
+
+# ❌ Импорт фич напрямую в core/
+from src.features import ...  # core не должен знать о src!
+```
+
+### ✅ Делай так:
+
+```python
+# ✅ Через registry
+feature = get_feature('user_sessions')
+if feature and feature.service:
+    feature.service.method()
+
+# ✅ Проверка инициализации
+if feature_registry.is_feature_initialized('my_feature'):
+    ...
+
+# ✅ Dependency injection
+# В feature.py получай зависимости через __init__ или initialize()
+```
 
 ---
 
-## 🆘 ЕСЛИ ПОТЕРЯЛ КОНТЕКСТ
+## 📊 Статус системы (LIVE)
 
-1. Прочитай `docs/AI_QUICK_START.md` (5 минут)
-2. Прочитай `CONTEXT.md` раздел нужной фичи (10 минут)
-3. Используй `MODULE_MAP.md` для поиска файлов
-4. Ищи `AI-LINK` комментарии в коде для понимания связей
+Эта информация **всегда актуальна**, т.к. генерируется из реального кода:
+
+```json
+{
+  "features_total": 3,
+  "features_enabled": 3,
+  "features_list": [
+    "user_sessions",
+    "voice_messages",
+    "link_transformation"
+  ],
+  "core_modules": [
+    "domain",
+    "features",
+    "ports",
+    "services",
+    "usecases"
+  ],
+  "api_versions": [
+    "v1",
+    "v2"
+  ],
+  "critical_files_ok": true,
+  "last_validated": "auto"
+}
+```
 
 ---
 
-## 📞 ЕСТЬ ВОПРОСЫ?
+## 🔄 Автоматическое обновление
 
-- Как работает X? → `CONTEXT.md` → раздел про X
-- Где находится Y? → `MODULE_MAP.md` → поиск по ключевым словам
-- Что делать с Z? → `ACTION_PLAN.md` → текущие задачи
-- Ошибка! → `docs/AI_TROUBLESHOOTING.md`
-- Архитектура? → `docs/ARCHITECTURE_BRIEF.md`
+Этот контекст обновляется **автоматически**:
+
+1. **При коммите** (pre-commit hook)
+   - Обновляет `.ai/LIVE_CONTEXT.json`
+   - Обновляет `.meta/*` файлы
+   - Валидирует импорты и структуру
+
+2. **При запросе** (manual)
+   ```bash
+   python3 .ai/tools/validate-context.py --generate
+   ```
+
+3. **При CI/CD** (если настроено)
+   - Автоматическая валидация
+   - Fail если контекст неактуален
 
 ---
 
-**Успехов в разработке! 🚀**
+## 💡 Полезные паттерны
 
-*Этот файл обновляется при важных изменениях в проекте.*
+### Feature с зависимостями
 
+```python
+def metadata(self):
+    return FeatureMetadata(
+        name="advanced_feature",
+        dependencies=["user_sessions"],  # Будет инициализирована первой
+        ...
+    )
+```
+
+### Feature с конфигурацией
+
+```python
+async def configure(self, config: Dict) -> bool:
+    """Применить конфигурацию"""
+    self.setting = config.get('my_setting', 'default')
+    return True
+```
+
+### Feature с graceful degradation
+
+```python
+def metadata(self):
+    return FeatureMetadata(
+        critical=False,  # Ошибка не остановит приложение
+        ...
+    )
+
+async def initialize(self) -> bool:
+    try:
+        # Попытка подключиться к внешнему сервису
+        self.connect()
+        return True
+    except:
+        logger.warning("External service unavailable, feature degraded")
+        return False  # Feature disabled, app continues
+```
+
+---
+
+## 🎓 Для AI Assistant
+
+**При работе с проектом:**
+
+1. **ВСЕГДА проверяй актуальность:**
+   ```bash
+   python3 .ai/tools/validate-context.py
+   ```
+
+2. **Используй LIVE_CONTEXT.json:**
+   - Актуальный список фич
+   - Реальная структура проекта
+   - Проверенные import paths
+
+3. **Не доверяй старым комментариям:**
+   - Код мог измениться
+   - Проверяй реальный код
+   - Используй validated context
+
+4. **Перед советом:**
+   - Проверь, что файл существует
+   - Проверь, что импорт работает
+   - Проверь, что фича инициализирована
+
+---
+
+## 📈 Next Steps
+
+Когда будешь добавлять новые фичи, **автоматически обновится:**
+- ✅ LIVE_CONTEXT.json
+- ✅ Validation rules
+- ✅ Quick reference
+- ✅ Meta-files
+
+**Ничего не нужно делать вручную!** 🎉
+
+---
+
+**Этот контекст гарантирует, что AI всегда работает с актуальной информацией о проекте.**

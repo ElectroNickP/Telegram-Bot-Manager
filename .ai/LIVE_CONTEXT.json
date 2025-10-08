@@ -1,0 +1,87 @@
+{
+  "last_validated": "2025-10-09T02:15:16.511948",
+  "project_structure": {
+    "features": [
+      "voice_messages",
+      "user_sessions",
+      "link_transformation"
+    ],
+    "core_modules": [
+      "services",
+      "config",
+      "entrypoints",
+      "usecases",
+      "domain",
+      "ports",
+      "features",
+      "utils"
+    ],
+    "api_modules": [
+      "v2",
+      "v1"
+    ]
+  },
+  "features": {
+    "voice_messages": {
+      "class": "VoiceMessagesFeature",
+      "file": "src/features/voice_messages/feature.py",
+      "methods": [
+        "__init__",
+        "metadata",
+        "register_telegram_handlers",
+        "register_api_routes"
+      ],
+      "has_handlers": true,
+      "has_api": true
+    },
+    "user_sessions": {
+      "class": "UserSessionsFeature",
+      "file": "src/features/user_sessions/feature.py",
+      "methods": [
+        "__init__",
+        "metadata",
+        "register_telegram_handlers",
+        "register_api_routes"
+      ],
+      "has_handlers": true,
+      "has_api": true
+    },
+    "link_transformation": {
+      "class": "LinkTransformationFeature",
+      "file": "src/features/link_transformation/feature.py",
+      "methods": [
+        "__init__",
+        "metadata",
+        "process_message_for_links",
+        "create_inline_keyboard",
+        "register_telegram_handlers",
+        "register_api_routes"
+      ],
+      "has_handlers": true,
+      "has_api": true
+    }
+  },
+  "critical_files": [
+    "core/features/base.py",
+    "core/features/registry.py",
+    "src/app.py",
+    "src/telegram_bot.py",
+    "start.py",
+    ".env.example"
+  ],
+  "quick_reference": {
+    "add_feature": [
+      "1. Create src/features/my_feature/feature.py",
+      "2. Inherit from Feature",
+      "3. Implement metadata(), initialize(), shutdown()",
+      "4. Register in telegram_bot.py: feature_registry.register(MyFeature())"
+    ],
+    "find_feature": [
+      "feature = get_feature('feature_name')",
+      "if feature: ..."
+    ],
+    "feature_health": [
+      "await feature_registry.health_check_all()"
+    ]
+  }
+}
