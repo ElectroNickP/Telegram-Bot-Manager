@@ -8,6 +8,7 @@ that are independent of external frameworks and libraries.
 from .bot import Bot, BotStatus, BotConfig
 from .conversation import Conversation, Message, ConversationKey
 from .config import SystemConfig, AdminBotConfig
+from .user_session import UserInfo, UserSession, SessionStatus, SessionMessage
 
 __all__ = [
     "Bot",
@@ -18,6 +19,10 @@ __all__ = [
     "ConversationKey",
     "SystemConfig",
     "AdminBotConfig",
+    "UserInfo",
+    "UserSession",
+    "SessionStatus",
+    "SessionMessage",
 ]
 
 
