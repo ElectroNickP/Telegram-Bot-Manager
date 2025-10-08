@@ -1,16 +1,10 @@
 """
 User Session Domain Entity
 
-AI-CONTEXT: Hexagonal Architecture - Domain Layer
-AI-CONTEXT: Manages P2P session state between two users through a bot
-AI-CONTEXT: Pure business logic - NO external dependencies, NO I/O
-AI-CONTEXT: NO framework imports, NO async code
-
 This module contains the core UserSession entity and related domain logic
 that represents a session between two users through a bot.
 
-Created: 2024-09-10
-Last updated: 2025-10-09 (Phase 2 - added to project)
+For architecture, connections, warnings see: .meta/core/domain/user_session.md
 """
 
 from dataclasses import dataclass, field
@@ -19,26 +13,14 @@ from typing import Optional, Dict, Any, List
 from enum import Enum
 
 
-# AI-CRITICAL: Session status determines entire session lifecycle
-# AI-WARNING: Don't add new statuses without updating session service logic
-# AI-LINK: core/services/user_session_service.py (uses these statuses)
-# AI-LINK: src/telegram_bot.py (displays status-based messages)
 class SessionStatus(Enum):
-    """
-    Session status enumeration.
-    
-    AI-HINT: Status flow: PENDING → ACTIVE → ENDED
-    AI-HINT: Or: PENDING → REJECTED (dead end)
-    """
+    """Session status enumeration."""
     PENDING = "pending"  # Waiting for user to accept
     ACTIVE = "active"    # Session is active
     REJECTED = "rejected"  # User rejected the session
     ENDED = "ended"      # Session ended by one of the users
 
 
-# AI-CRITICAL: Value object representing Telegram user
-# AI-LINK: adapters/telegram/ (creates UserInfo from Telegram API)
-# AI-LINK: bot_configs.json:"online_users" (stored here)
 @dataclass
 class UserInfo:
     """User information value object."""

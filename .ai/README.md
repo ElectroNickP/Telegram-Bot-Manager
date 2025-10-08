@@ -87,7 +87,53 @@
 
 ## 🔍 AI-КОММЕНТАРИИ В КОДЕ
 
-### Типы комментариев:
+### ⚡ NEW: Meta-файлы вместо inline комментариев!
+
+**Код остается чистым!** Вся архитектурная информация в `.meta/` файлах.
+
+#### Как работает:
+
+```python
+# Файл: core/domain/user_session.py
+"""
+User Session Domain Entity
+
+For architecture, connections, warnings see: .meta/core/domain/user_session.md
+"""
+
+class UserSession:
+    # Чистый код, никаких AI-комментариев!
+    pass
+```
+
+```markdown
+# Файл: .meta/core/domain/user_session.md
+- Критичность: HIGH
+- Используется в: session_service, telegram_bot
+- Warnings: не менять структуру
+- Hints: тесты в tests/unit/
+```
+
+#### Где искать meta:
+
+1. **Master Index:** `.meta/INDEX.md` - список всех meta-файлов
+2. **По файлу:** Если работаешь с `core/domain/user_session.py` → читай `.meta/core/domain/user_session.md`
+3. **По фиче:** В INDEX.md есть группировка по фичам
+
+#### Преимущества:
+
+- ✅ **Код чистый** - не захламлен комментариями
+- ✅ **Мета централизована** - вся инфо в одном месте  
+- ✅ **Легко обновлять** - отдельный файл
+- ✅ **Не мешает разработчикам** - опционально
+
+---
+
+## 🗂️ AI-КОММЕНТАРИИ (Legacy - deprecated)
+
+**Note:** Используй `.meta/` файлы вместо inline комментариев!
+
+Старый формат (сохранен для reference):
 
 #### `AI-CRITICAL` 
 **Критичный код, изменения влияют на весь проект**
