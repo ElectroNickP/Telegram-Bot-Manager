@@ -1,0 +1,68 @@
+#!/bin/bash
+#
+# Pre-commit Hook - Auto Testing
+#
+# Автоматически:
+# 1. Валидирует контекст
+# 2. Обновляет meta-файлы
+# 3. Анализирует покрытие тестами
+# 4. Генерирует недостающие тесты для критичного кода
+# 5. Запускает quick tests
+#
+
+set -e
+
+echo "🔍 Pre-commit: Starting auto-checks..."
+
+# 1. Context validation
+echo ""
+echo "📊 Step 1: Validating context..."
+python3 .ai/tools/validate-context.py --generate || {
+    echo "⚠️  Context validation failed (continuing)"
+}
+
+# 2. Meta-sync
+echo ""
+echo "📝 Step 2: Syncing meta-files..."
+python3 .ai/tools/meta-sync.py || {
+    echo "⚠️  Meta-sync failed (continuing)"
+}
+
+# 3. Test coverage analysis
+echo ""
+echo "🧪 Step 3: Analyzing test coverage..."
+python3 .ai/tools/auto-test-gen.py --diff || {
+    echo "⚠️  Coverage analysis failed (continuing)"
+}
+
+# 4. Generate tests for critical code
+echo ""
+echo "🔧 Step 4: Checking for critical untested code..."
+python3 .ai/tools/auto-test-gen.py --diff --generate || {
+    echo "ℹ️  No critical code needs auto-tests"
+}
+
+# 5. Quick tests (optional, can be disabled)
+if [ "$SKIP_TESTS" != "1" ]; then
+    echo ""
+    echo "⚡ Step 5: Running quick tests..."
+    python3 run_all_tests.py --quick 2>/dev/null || {
+        echo ""
+        echo "⚠️  WARNING: Quick tests failed!"
+        echo "   Run manually: python3 run_all_tests.py"
+        echo "   To skip tests: SKIP_TESTS=1 git commit ..."
+        echo ""
+        read -p "Continue anyway? (y/N) " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
+    }
+fi
+
+echo ""
+echo "✅ Pre-commit checks complete!"
+echo ""
+
+exit 0
+
