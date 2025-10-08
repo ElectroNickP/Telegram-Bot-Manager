@@ -6,20 +6,33 @@ extracted from the monolithic app.py during refactoring.
 """
 
 import base64
+import hashlib
 import logging
+import os
 from functools import wraps
 
 from flask import session, redirect, url_for, jsonify, request
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 
-# User credentials (TODO: move to external config or database)
-USERS = {"admin": "admin"}
+# Load environment variables
+load_dotenv()
+
+# Get credentials from environment
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD_HASH = os.getenv("ADMIN_PASSWORD_HASH")
+
+# Fallback for backward compatibility (INSECURE - only for development)
+if not ADMIN_PASSWORD_HASH:
+    logger.warning("⚠️  ADMIN_PASSWORD_HASH not set in .env! Using insecure default!")
+    # Default password is 'admin' - hash: sha256('admin')
+    ADMIN_PASSWORD_HASH = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"
 
 
 def verify_credentials(username: str, password: str) -> bool:
     """
-    Verify user credentials
+    Verify user credentials against environment variables
     
     Args:
         username: Username to verify
@@ -28,8 +41,19 @@ def verify_credentials(username: str, password: str) -> bool:
     Returns:
         True if credentials are valid, False otherwise
     """
-    if username in USERS and USERS[username] == password:
+    # Check username
+    if username != ADMIN_USERNAME:
+        logger.warning(f"Failed login attempt for username: {username}")
+        return False
+    
+    # Hash the provided password
+    password_hash = hashlib.sha256(password.encode()).hexdigest()
+    
+    # Compare hashes
+    if password_hash == ADMIN_PASSWORD_HASH:
         return True
+    
+    logger.warning(f"Invalid password for user: {username}")
     return False
 
 

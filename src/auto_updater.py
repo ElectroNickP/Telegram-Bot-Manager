@@ -463,7 +463,8 @@ if kill -0 "$APP_PID" 2>/dev/null; then
     
     # Wait for health check
     for i in {{1..30}}; do
-        if curl -s -u admin:securepassword123 http://localhost:60183/api/v2/system/health > /dev/null 2>&1; then
+        # Use credentials from environment or default
+        if curl -s -u "${{ADMIN_USERNAME:-admin}}:${{ADMIN_PASSWORD:-admin}}" http://localhost:60183/api/v2/system/health > /dev/null 2>&1; then
             echo "✅ Health check passed!"
             break
         fi

@@ -214,3 +214,47 @@ cookies*.txt
 !/src/static/uploads/avatars/
 /src/static/uploads/avatars/*
 !/src/static/uploads/avatars/.gitkeep
+
+# ========================================
+# Added during security audit (2025-10-09)
+# ========================================
+
+# Environment files (SECURITY)
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
+# All log files (comprehensive)
+**/*.log
+*.log
+logs/
+**/logs/
+test_*.log
+*_test.log
+app_*.log
+
+# PID files
+*.pid
+**/. pid
+
+# Backup files with sensitive data
+**/backups/*.json
+!**/backups/.gitkeep
+
+# Temporary test files
+test_session_*.py
+temp_*.py
+
+# Coverage and test artifacts
+.coverage.*
+htmlcov/
+.pytest_cache/
+
+# Security: Never commit credentials
+**/secrets/
+**/credentials/
+*_secret.json
+*_credentials.json
+

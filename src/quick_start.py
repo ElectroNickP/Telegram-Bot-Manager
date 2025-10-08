@@ -69,9 +69,13 @@ def test_auto_update():
         from requests.auth import HTTPBasicAuth
 
         # Trigger auto-update
+        # Get credentials from environment
+        admin_username = os.getenv("ADMIN_USERNAME", "admin")
+        admin_password = os.getenv("ADMIN_PASSWORD", "admin")
+        
         response = requests.post(
             "http://localhost:60183/api/update",
-            auth=HTTPBasicAuth("admin", "securepassword123"),
+            auth=HTTPBasicAuth(admin_username, admin_password),
             timeout=10,
         )
 
