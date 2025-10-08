@@ -16,51 +16,31 @@ from config_manager import CONVERSATIONS, CONVERSATIONS_LOCK, OPENAI_LOCK
 # Initialize logger first
 logger = logging.getLogger(__name__)
 
-# Import Link Transformation functionality
+# Import feature registry and features
 try:
     import sys
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    
+    from core.features.registry import feature_registry
+    from features import UserSessionsFeature, VoiceMessagesFeature, LinkTransformationFeature
     from core.domain.link_transformation import LinkTransformationConfig
-    from core.usecases.link_transformation import LinkTransformationService
-    
-    # Initialize link transformation service
-    link_transformation_service = LinkTransformationService()
-    LINK_TRANSFORMATION_AVAILABLE = True
-    logger.info("✅ Link transformation service initialized")
-except Exception as e:
-    logger.warning(f"⚠️ Link transformation not available: {e}")
-    link_transformation_service = None
-    LINK_TRANSFORMATION_AVAILABLE = False
-
-# Import User Session functionality
-try:
     from core.domain.user_session import UserInfo
-    from core.usecases.user_session_management import UserSessionManagementUseCase
-    from core.services.user_session_service import UserSessionService
-    from adapters.storage.json_adapter import JsonConfigStorageAdapter
     
-    USER_SESSION_AVAILABLE = True
-    user_session_service = None  # Will be initialized lazily
-    logger.info("✅ User session imports successful")
+    # Features are initialized via registry in aiogram_bot()
+    FEATURES_AVAILABLE = True
+    logger.info("✅ Feature system imports successful")
+    
 except Exception as e:
-    logger.warning(f"⚠️ User session not available: {e}")
-    user_session_service = None
-    USER_SESSION_AVAILABLE = False
+    logger.error(f"❌ Feature system not available: {e}", exc_info=True)
+    FEATURES_AVAILABLE = False
+    feature_registry = None
 
 
-def get_user_session_service():
-    """Lazy initialization of user session service."""
-    global user_session_service
-    if USER_SESSION_AVAILABLE and user_session_service is None:
-        try:
-            storage_adapter = JsonConfigStorageAdapter()
-            session_use_case = UserSessionManagementUseCase(storage_adapter)
-            user_session_service = UserSessionService(session_use_case)
-            logger.info("✅ User session service initialized")
-        except Exception as e:
-            logger.error(f"❌ Failed to initialize user session service: {e}")
-            return None
-    return user_session_service
+def get_feature(feature_name: str):
+    """Get feature instance from registry."""
+    if not FEATURES_AVAILABLE or not feature_registry:
+        return None
+    return feature_registry.get_feature(feature_name)
 
 
 async def send_message_with_link_transformation(message, text, bot_config, parse_mode=None):
@@ -74,8 +54,11 @@ async def send_message_with_link_transformation(message, text, bot_config, parse
         parse_mode: Telegram parse mode (HTML, Markdown, etc.)
     """
     try:
+        # Get link transformation feature
+        link_feature = get_feature('link_transformation')
+        
         # Check if link transformation is available and enabled
-        if (LINK_TRANSFORMATION_AVAILABLE and 
+        if (link_feature and link_feature.service and
             bot_config.get('link_transformation', {}).get('enabled', False)):
             
             # Get link transformation config
@@ -87,13 +70,13 @@ async def send_message_with_link_transformation(message, text, bot_config, parse
                 logger.info("🔗 Processing links for transformation...")
                 
                 # Transform links to buttons
-                result = link_transformation_service.process_message(text, link_config)
+                result = link_feature.process_message_for_links(text, link_config)
                 
                 if result.transformations_count > 0 and result.buttons:
                     logger.info(f"✅ Transformed {result.transformations_count} links into {len(result.buttons)} buttons")
                     
                     # Create inline keyboard with buttons
-                    keyboard_markup = create_inline_keyboard(
+                    keyboard_markup = link_feature.create_inline_keyboard(
                         result.buttons, 
                         link_config.button_layout
                     )
@@ -506,6 +489,36 @@ async def aiogram_bot(config, stop_event):
     except Exception as e:
         logger.error(f"❌ Ошибка подключения к Telegram API: {e}")
         return
+    
+    # Store bot_id in bot instance for features
+    bot._config_bot_id = config.get("bot_id", 1)
+    
+    # Initialize features if available
+    if FEATURES_AVAILABLE and feature_registry:
+        try:
+            logger.info("🔄 Initializing features...")
+            
+            # Register features
+            feature_registry.register(UserSessionsFeature())
+            feature_registry.register(VoiceMessagesFeature())
+            feature_registry.register(LinkTransformationFeature())
+            
+            # Initialize all features
+            results = await feature_registry.initialize_all()
+            
+            # Log results
+            for name, success in results.items():
+                if success:
+                    logger.info(f"✅ Feature '{name}' ready")
+                else:
+                    logger.warning(f"⚠️  Feature '{name}' disabled")
+            
+            # Register Telegram handlers from features
+            feature_registry.register_telegram_handlers(dp, bot)
+            
+        except Exception as e:
+            logger.error(f"❌ Feature initialization error: {e}", exc_info=True)
+            logger.warning("⚠️  Bot will continue without features")
 
     @dp.message(Command(commands=["start"]))
     async def cmd_start(message: types.Message):
@@ -529,41 +542,7 @@ async def aiogram_bot(config, stop_event):
 
         await message.answer(text)
 
-    @dp.message(Command(commands=["connect"]))
-    async def cmd_connect(message: types.Message):
-        """Handle /connect command for user sessions."""
-        session_service = get_user_session_service()
-        if session_service:
-            bot_id = config.get("bot_id", 1)  # Extract bot_id from config
-            await session_service.handle_connect_command(bot, message, bot_id)
-        else:
-            await message.reply("❌ Функция подключения к пользователям недоступна.")
-
-    @dp.message(Command(commands=["exit"]))
-    async def cmd_exit(message: types.Message):
-        """Handle /exit command to end user session."""
-        session_service = get_user_session_service()
-        if session_service:
-            bot_id = config.get("bot_id", 1)  # Extract bot_id from config
-            await session_service.handle_exit_command(bot, message, bot_id)
-        else:
-            await message.reply("❌ Функция сессий недоступна.")
-
-    @dp.callback_query()
-    async def handle_callback_query(callback_query: types.CallbackQuery):
-        """Handle callback queries for user sessions."""
-        session_service = get_user_session_service()
-        if session_service:
-            data = callback_query.data
-            if data.startswith("connect_") or data.startswith("session_"):
-                bot_id = config.get("bot_id", 1)  # Extract bot_id from config
-                
-                if data.startswith("connect_"):
-                    await session_service.handle_user_selection(bot, callback_query, bot_id)
-                elif data.startswith("session_"):
-                    await session_service.handle_session_response(bot, callback_query)
-        
-        await callback_query.answer()
+    # Note: /connect, /exit, and callback handlers are registered via UserSessionsFeature
 
     @dp.message()
     async def handle_group_message(message: types.Message):
@@ -593,14 +572,7 @@ async def aiogram_bot(config, stop_event):
                 context_limit = config.get("group_context_limit", GROUP_CONTEXT_MESSAGES_LIMIT)
                 add_message_to_cache(message.chat.id, message_data, context_limit)
 
-        # 0. Check if user is in an active session (for private messages only)
-        if message.chat.type == "private":
-            session_service = get_user_session_service()
-            if session_service:
-                bot_id = config.get("bot_id", 1)  # Extract bot_id from config
-                message_routed = await session_service.route_session_message(bot, message, bot_id)
-                if message_routed:
-                    return  # Message was handled by session routing, don't process normally
+        # Note: Session routing is handled by UserSessionsFeature in its message router
 
         # 1. Определяем, должен ли бот реагировать
         should_process = False
@@ -622,68 +594,75 @@ async def aiogram_bot(config, stop_event):
         
         # 2.2. Register user as online for session system (private messages only)
         if message.chat.type == "private":
-            session_service = get_user_session_service()
-            if session_service:
-                bot_id = config.get("bot_id", 1)  # Extract bot_id from config
+            session_feature = get_feature('user_sessions')
+            if session_feature and session_feature.service:
+                bot_id = config.get("bot_id", 1)
                 user_info_session = UserInfo(
                     user_id=message.from_user.id,
                     username=message.from_user.username,
                     first_name=message.from_user.first_name,
                     last_name=message.from_user.last_name
                 )
-                session_service.register_user_online(bot_id, user_info_session)
+                session_feature.service.register_user_online(bot_id, user_info_session)
 
         # 3. Получаем текст от пользователя (из текста или голоса)
         user_prompt = ""
         if message.voice:
-            logger.info(
-                f"🎤 Получено голосовое сообщение от пользователя {message.from_user.first_name if message.from_user else 'Unknown'}"
-            )
-            try:
-                voice_file_id = message.voice.file_id
-                logger.info(f"📥 Начинаю скачивание голосового файла {voice_file_id}")
-
-                file_info = await bot.get_file(voice_file_id)
-                ogg_filename = f"{voice_file_id}.ogg"
-
-                logger.info(f"⬇️ Скачиваю файл: {file_info.file_path} → {ogg_filename}")
-                await bot.download_file(file_info.file_path, ogg_filename)
-
-                # Проверяем размер скачанного файла
-                file_size = os.path.getsize(ogg_filename) if os.path.exists(ogg_filename) else 0
-                logger.info(f"📁 Файл скачан: {ogg_filename} (размер: {file_size} байт)")
-
-                if file_size == 0:
-                    logger.error(f"❌ Скачанный файл пустой: {ogg_filename}")
-                    await message.reply("❌ Ошибка: голосовое сообщение пустое")
-                    return
-
-                # OpenAI Whisper поддерживает OGG напрямую - НЕ НУЖНА КОНВЕРТАЦИЯ!
-                logger.info("✅ Пропускаю конвертацию - Whisper поддерживает OGG напрямую")
-
-                logger.info("🤖 Отправляю OGG напрямую в OpenAI Whisper...")
-                with OPENAI_LOCK:
-                    openai.api_key = config["openai_api_key"]
-                    transcribed_text = await transcribe_audio(ogg_filename)
-
+            # Use voice_messages feature for transcription
+            voice_feature = get_feature('voice_messages')
+            
+            if voice_feature and voice_feature.service:
+                logger.info(f"🎤 Voice message from {message.from_user.first_name if message.from_user else 'Unknown'}")
+                
+                transcribed_text = await voice_feature.handle_voice_message(
+                    bot, message, config["openai_api_key"]
+                )
+                
                 if transcribed_text:
-                    logger.info(f"✅ Транскрибация успешна: '{transcribed_text}'")
+                    logger.info(f"✅ Transcription: '{transcribed_text}'")
                     await message.reply(f'<i>Транскрибация: "{transcribed_text}"</i>')
                     user_prompt = transcribed_text
                 else:
-                    logger.error("❌ Транскрибация не удалась")
+                    logger.error("❌ Transcription failed")
                     await message.reply("❌ Не удалось распознать речь в голосовом сообщении")
                     return
-
-            except Exception as e:
-                logger.error(f"❌ Ошибка обработки голосового сообщения: {e}")
-                await message.reply(f"❌ Ошибка обработки голосового сообщения: {e}")
-                return
-            finally:
-                # Удаляем временный OGG файл
-                if os.path.exists(ogg_filename):
-                    os.remove(ogg_filename)
-                    logger.info(f"🗑️ Удален временный файл: {ogg_filename}")
+            else:
+                # Fallback to legacy transcription if feature not available
+                logger.warning("⚠️  Voice feature not available, using legacy transcription")
+                ogg_filename = None
+                try:
+                    voice_file_id = message.voice.file_id
+                    file_info = await bot.get_file(voice_file_id)
+                    ogg_filename = f"{voice_file_id}.ogg"
+                    await bot.download_file(file_info.file_path, ogg_filename)
+                    
+                    file_size = os.path.getsize(ogg_filename) if os.path.exists(ogg_filename) else 0
+                    if file_size == 0:
+                        await message.reply("❌ Ошибка: голосовое сообщение пустое")
+                        return
+                    
+                    with OPENAI_LOCK:
+                        openai.api_key = config["openai_api_key"]
+                        transcribed_text = await transcribe_audio(ogg_filename)
+                    
+                    if transcribed_text:
+                        await message.reply(f'<i>Транскрибация: "{transcribed_text}"</i>')
+                        user_prompt = transcribed_text
+                    else:
+                        await message.reply("❌ Не удалось распознать речь в голосовом сообщении")
+                        return
+                except Exception as e:
+                    logger.error(f"❌ Voice processing error: {e}")
+                    await message.reply(f"❌ Ошибка обработки голосового сообщения")
+                    return
+                finally:
+                    # Cleanup temp file
+                    if ogg_filename and os.path.exists(ogg_filename):
+                        try:
+                            os.remove(ogg_filename)
+                            logger.info(f"🗑️ Removed temp file: {ogg_filename}")
+                        except:
+                            pass
         else:  # message.text
             user_prompt = message.text
             logger.info(

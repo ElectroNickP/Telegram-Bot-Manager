@@ -1,6 +1,6 @@
 # Meta-файл для telegram_bot.py
 
-**Auto-generated:** 2025-10-09 01:49  
+**Auto-generated:** 2025-10-09 02:08  
 **File:** src/telegram_bot.py  
 **Layer:** application  
 **Criticality:** LOW
@@ -11,7 +11,7 @@
 
 ### Публичные функции
 
-- `get_user_session_service()`
+- `get_feature()`
 - `create_inline_keyboard()`
 - `validate_telegram_token()`
 - `get_user_info()`
@@ -35,8 +35,8 @@
 - `aiogram.utils.token`
 - `config_manager`
 - `sys`
-- `core.domain.link_transformation`
-- `core.usecases.link_transformation`
+- `core.features.registry`
+- `features`
 
 ## 💡 Hints
 

@@ -1,6 +1,6 @@
 # Meta-файл для app.py
 
-**Auto-generated:** 2025-10-09 01:49  
+**Auto-generated:** 2025-10-09 02:08  
 **File:** src/app.py  
 **Layer:** application  
 **Criticality:** CRITICAL
@@ -31,8 +31,8 @@
 - `shared.utils`
 - `config_manager`
 - `bot_manager`
-- `pathlib`
-- `__version__`
+- `core.features.registry`
+- `features`
 
 ## ⚠️ Warnings
 

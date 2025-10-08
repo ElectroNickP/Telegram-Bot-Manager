@@ -2,7 +2,7 @@
 """
 Telegram Bot Manager - Refactored Application Factory
 
-This is the new modularized version of the Flask application.
+This is the new modularized version of the Flask application with feature-based architecture.
 """
 
 import logging
@@ -22,6 +22,20 @@ from shared.utils import datetime_filter, find_free_port
 # Import configuration and bot managers
 import config_manager as cm
 import bot_manager as bm
+
+# Import feature registry and features
+try:
+    sys.path.append('..')
+    from core.features.registry import feature_registry
+    from features import UserSessionsFeature, VoiceMessagesFeature, LinkTransformationFeature
+    FEATURES_AVAILABLE = True
+    logger_features = logging.getLogger(__name__)
+    logger_features.info("✅ Feature system imports successful (app)")
+except Exception as e:
+    logger_features = logging.getLogger(__name__)
+    logger_features.error(f"❌ Feature system not available: {e}")
+    FEATURES_AVAILABLE = False
+    feature_registry = None
 
 # Configure logging
 logging.basicConfig(
@@ -87,6 +101,26 @@ def create_app():
     app.register_blueprint(api_v2_telegram_bp)
     app.register_blueprint(api_v2_uploads_bp)
     app.register_blueprint(api_v2_link_transformation_bp)
+    
+    # Register feature API routes
+    if FEATURES_AVAILABLE and feature_registry:
+        try:
+            logger.info("🔄 Registering feature API routes...")
+            
+            # Note: Features are already registered in telegram_bot.py
+            # Here we just need to register their API routes if they exist
+            
+            # Check if features are already registered, if not register them
+            if not feature_registry.features:
+                feature_registry.register(UserSessionsFeature())
+                feature_registry.register(VoiceMessagesFeature())
+                feature_registry.register(LinkTransformationFeature())
+            
+            feature_registry.register_api_routes(app)
+            logger.info("✅ Feature API routes registered")
+            
+        except Exception as e:
+            logger.error(f"❌ Feature API route registration error: {e}", exc_info=True)
     
     # Add route for serving uploaded files
     @app.route('/static/uploads/<path:filename>')
