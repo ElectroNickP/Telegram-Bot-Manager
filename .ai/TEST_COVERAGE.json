@@ -1,10 +1,27 @@
 {
-  "last_updated": "2025-10-09T02:29:21.175748",
+  "last_updated": "2025-10-09T02:36:10.510954",
   "entities": {},
   "coverage": {
-    "total": 0,
-    "tested": 0,
-    "percentage": 0
+    "total": 727,
+    "tested": 8,
+    "percentage": 1.1
   },
-  "by_priority": {}
+  "by_priority": {
+    "3": {
+      "total": 505,
+      "tested": 8
+    },
+    "2": {
+      "total": 24,
+      "tested": 0
+    },
+    "5": {
+      "total": 45,
+      "tested": 0
+    },
+    "4": {
+      "total": 153,
+      "tested": 0
+    }
+  }
 }

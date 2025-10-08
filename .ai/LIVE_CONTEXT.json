@@ -1,5 +1,5 @@
 {
-  "last_validated": "2025-10-09T02:29:21.053330",
+  "last_validated": "2025-10-09T02:36:06.631866",
   "project_structure": {
     "features": [
       "voice_messages",
@@ -10,6 +10,7 @@
       "services",
       "config",
       "entrypoints",
+      "adapters",
       "usecases",
       "domain",
       "ports",
