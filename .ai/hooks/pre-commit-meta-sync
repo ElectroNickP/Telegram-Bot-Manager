@@ -1,0 +1,56 @@
+#!/bin/bash
+# Pre-commit hook для автоматической синхронизации .meta файлов
+
+echo "🔍 Checking .meta files..."
+
+# Получаем список измененных Python файлов
+changed_py_files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$')
+
+if [ -z "$changed_py_files" ]; then
+    echo "✅ No Python files changed"
+    exit 0
+fi
+
+# Проверяем критичные файлы
+critical_changed=()
+while IFS= read -r file; do
+    # Проверяем есть ли этот файл в списке критичных
+    case "$file" in
+        core/domain/*.py|core/usecases/*.py|core/services/*.py|adapters/storage/*.py|src/app.py|src/config_manager.py|src/telegram_bot.py|start.py)
+            critical_changed+=("$file")
+            ;;
+    esac
+done <<< "$changed_py_files"
+
+if [ ${#critical_changed[@]} -eq 0 ]; then
+    echo "✅ No critical files changed"
+    exit 0
+fi
+
+echo "📝 Critical files changed: ${#critical_changed[@]}"
+
+# Генерируем/обновляем meta для измененных критичных файлов
+updated=0
+for file in "${critical_changed[@]}"; do
+    echo "  Updating meta for $file..."
+    python3 .ai/tools/meta-sync.py generate "$file" > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        # Добавляем сгенерированный meta-файл в коммит
+        meta_file=".meta/${file%.py}.md"
+        if [ -f "$meta_file" ]; then
+            git add "$meta_file"
+            updated=$((updated + 1))
+        fi
+    fi
+done
+
+# Обновляем INDEX если что-то изменилось
+if [ $updated -gt 0 ]; then
+    git add .meta/INDEX.md 2>/dev/null
+    echo "✅ Updated $updated meta file(s)"
+else
+    echo "✅ Meta files up-to-date"
+fi
+
+exit 0
+
