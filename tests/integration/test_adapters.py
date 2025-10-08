@@ -11,9 +11,9 @@ import shutil
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
-from adapters.telegram.aiogram_adapter import AiogramTelegramAdapter
-from adapters.storage.json_adapter import JsonConfigStorageAdapter
-from adapters.updater.git_adapter import GitAutoUpdaterAdapter
+from core.adapters.telegram.aiogram_adapter import AiogramTelegramAdapter
+from core.adapters.storage.json_adapter import JsonConfigStorageAdapter
+from core.adapters.updater.git_adapter import GitAutoUpdaterAdapter
 
 from core.domain.bot import Bot, BotConfig, BotStatus
 from core.domain.conversation import Conversation, ConversationKey, Message

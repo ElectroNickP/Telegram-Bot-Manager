@@ -27,9 +27,9 @@ import bot_manager as legacy_bot_manager
 # Import new architecture components
 from core.entrypoints.factories import UseCaseFactory, EntryPointFactory
 from core.entrypoints.config import Config
-from adapters.storage.json_adapter import JSONStorageAdapter
-from adapters.telegram.aiogram_adapter import AiogramTelegramAdapter
-from adapters.updater.git_adapter import GitUpdaterAdapter
+from core.adapters.storage.json_adapter import JSONStorageAdapter
+from core.adapters.telegram.aiogram_adapter import AiogramTelegramAdapter
+from core.adapters.updater.git_adapter import GitUpdaterAdapter
 
 # Import bridge components
 from bridge.config_bridge import ConfigBridge

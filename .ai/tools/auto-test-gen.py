@@ -108,16 +108,29 @@ class AutoTestGenerator:
     def _get_changed_files(self) -> List[Path]:
         """Получить изменённые файлы из git"""
         try:
+            # Try staged files first (for pre-commit hook)
             result = subprocess.run(
-                ['git', 'diff', '--name-only', 'HEAD'],
+                ['git', 'diff', '--cached', '--name-only', 'HEAD'],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True
             )
             
+            files_output = result.stdout.strip()
+            
+            # If no staged files, try modified files
+            if not files_output:
+                result = subprocess.run(
+                    ['git', 'diff', '--name-only'],
+                    cwd=self.project_root,
+                    capture_output=True,
+                    text=True
+                )
+                files_output = result.stdout.strip()
+            
             files = []
-            for line in result.stdout.strip().split('\n'):
-                if line.endswith('.py'):
+            for line in files_output.split('\n'):
+                if line and line.endswith('.py'):
                     file_path = self.project_root / line
                     if file_path.exists():
                         files.append(file_path)

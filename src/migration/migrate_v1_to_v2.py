@@ -22,7 +22,7 @@ from bridge.config_bridge import ConfigBridge
 from bridge.bot_management_bridge import BotManagementBridge
 
 # Import adapters
-from adapters.storage.json_adapter import JSONStorageAdapter
+from core.adapters.storage.json_adapter import JSONStorageAdapter
 
 # Import use cases
 from core.usecases.bot_management import BotManagementUseCase

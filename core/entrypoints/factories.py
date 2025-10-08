@@ -8,9 +8,9 @@ with proper dependency injection.
 import logging
 from pathlib import Path
 
-from ..adapters.auto_updater import GitAutoUpdaterAdapter
-from ..adapters.storage import JsonConfigStorageAdapter
-from ..adapters.telegram import TelegramAdapter
+from ..adapters.updater.git_adapter import GitAutoUpdaterAdapter
+from ..adapters.storage.json_adapter import JsonConfigStorageAdapter
+from ..adapters.telegram.aiogram_adapter import AiogramTelegramAdapter
 from ..domain.ports import (
     AutoUpdaterPort,
     ConfigStoragePort,
@@ -36,7 +36,7 @@ class UseCaseFactory:
     def _get_telegram_port(self) -> TelegramPort:
         """Get or create Telegram port."""
         if self._telegram_port is None:
-            self._telegram_port = TelegramAdapter()
+            self._telegram_port = AiogramTelegramAdapter()
         return self._telegram_port
 
     def _get_storage_port(self) -> ConfigStoragePort:

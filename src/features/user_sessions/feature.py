@@ -16,7 +16,7 @@ from core.features.base import Feature, FeatureMetadata
 from core.domain.user_session import UserInfo
 from core.services.user_session_service import UserSessionService
 from core.usecases.user_session_management import UserSessionManagementUseCase
-from adapters.storage.json_adapter import JsonConfigStorageAdapter
+from core.adapters.storage.json_adapter import JsonConfigStorageAdapter
 
 logger = logging.getLogger(__name__)
 
