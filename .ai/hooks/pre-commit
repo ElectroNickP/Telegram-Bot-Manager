@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# Pre-commit Hook - Fast Version
+#
+# Быстрая проверка перед коммитом:
+# 1. Валидация контекста
+# 2. Обновление meta
+# 3. Проверка coverage
+#
+# Пропускает тесты (для скорости)
+# Для полной проверки: .ai/hooks/pre-commit-full
+#
+
+set -e
+
+echo "🚀 Pre-commit: Quick checks..."
+
+# 1. Context validation
+echo ""
+echo "📊 Validating context..."
+if ! python3 .ai/tools/validate-context.py --generate 2>/dev/null; then
+    echo "⚠️  Context validation warning (continuing)"
+fi
+
+# 2. Meta-sync (with proper command)
+echo ""
+echo "📝 Syncing meta-files..."
+if ! python3 .ai/tools/meta-sync.py sync 2>/dev/null; then
+    echo "ℹ️  Meta-sync skipped"
+fi
+
+# 3. Coverage analysis (for changed files only)
+echo ""
+echo "🧪 Analyzing test coverage..."
+if ! python3 .ai/tools/auto-test-gen.py --diff 2>/dev/null; then
+    echo "ℹ️  Coverage analysis skipped"
+fi
+
+echo ""
+echo "✅ Pre-commit complete!"
+
+exit 0
+
