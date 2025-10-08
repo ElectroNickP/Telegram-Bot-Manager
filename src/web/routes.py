@@ -5,7 +5,12 @@ This module handles web page routing including:
 - Main dashboard (index page)
 - Bot dialogs page
 - Marketplace pages
+- Settings page
 - Static file serving
+
+AI Context:
+- /settings: Settings page with password change UI
+- All pages require login (@login_required)
 
 Extracted from monolithic app.py during refactoring.
 """
@@ -155,6 +160,16 @@ def bot_detail_page(bot_id):
     context = get_template_context()
     context["bot"] = public_bot
     return render_template("bot_detail.html", **context)
+
+
+@web_bp.route("/settings")
+@login_required
+def settings_page():
+    """
+    Settings page with password change UI
+    """
+    context = get_template_context()
+    return render_template("settings.html", **context)
 
 
 

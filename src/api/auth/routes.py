@@ -5,6 +5,12 @@ This module handles user authentication including:
 - Login page (GET/POST)
 - Logout functionality
 - API login endpoint
+- Password change API
+
+AI Context:
+- /api/v2/auth/change-password: POST endpoint for password change
+- Requires: current_password, new_password
+- Returns: success/error JSON
 
 Extracted from monolithic app.py during refactoring.
 """
@@ -12,7 +18,7 @@ Extracted from monolithic app.py during refactoring.
 import logging
 from flask import Blueprint, request, session, redirect, url_for, render_template, jsonify
 
-from shared.auth import verify_credentials
+from shared.auth import verify_credentials, change_password, api_v2_auth_required
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +114,66 @@ def api_login():
         return jsonify({
             "success": False, 
             "message": "Internal server error"
+        }), 500
+
+
+@auth_bp.route("/api/v2/auth/change-password", methods=["POST"])
+@api_v2_auth_required
+def change_password_endpoint():
+    """
+    Change password API endpoint (API v2)
+    
+    Expected JSON payload:
+    {
+        "current_password": "current_password",
+        "new_password": "new_password"
+    }
+    
+    Returns:
+        JSON response:
+        {
+            "success": true/false,
+            "message": "Status message"
+        }
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                "success": False,
+                "message": "JSON payload required"
+            }), 400
+        
+        current_password = data.get("current_password")
+        new_password = data.get("new_password")
+        
+        # Validate input
+        if not current_password or not new_password:
+            return jsonify({
+                "success": False,
+                "message": "Текущий и новый пароль обязательны"
+            }), 400
+        
+        # Change password
+        success, message = change_password(current_password, new_password)
+        
+        if success:
+            logger.info(f"Password changed successfully by user: {session.get('username', 'api')}")
+            return jsonify({
+                "success": True,
+                "message": message
+            }), 200
+        else:
+            return jsonify({
+                "success": False,
+                "message": message
+            }), 400
+            
+    except Exception as e:
+        logger.error(f"Password change API error: {e}")
+        return jsonify({
+            "success": False,
+            "message": f"Ошибка сервера: {str(e)}"
         }), 500
 
 

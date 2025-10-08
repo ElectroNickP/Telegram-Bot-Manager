@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#41F2FF">
+    <title>⚙️ Settings - ELECTRONICK</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/static/js/jquery-3.6.0.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #41F2FF;
+            --secondary: #4CA8FF;
+            --tertiary: #7B5CFF;
+            --bg-primary: #0B0F1A;
+            --bg-surface: #0F1524;
+            --text-primary: #E9F2FF;
+            --text-secondary: #B8C7D9;
+            --glass-bg: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --gradient-main: linear-gradient(135deg, #41F2FF, #4CA8FF 55%, #7B5CFF);
+            --success: #00FF94;
+            --error: #FF4757;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(600px at 20% 20%, #00EAFF55, transparent 60%),
+                        radial-gradient(800px at 80% 80%, #7B5CFF22, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding: 20px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-main);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .brand h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .nav {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            background: var(--glass-border);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn i {
+            margin-right: 8px;
+        }
+
+        /* Settings Container */
+        .settings-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .settings-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 32px;
+            backdrop-filter: blur(20px);
+            margin-bottom: 24px;
+        }
+
+        .settings-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .settings-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--gradient-main);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .settings-title h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 24px;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .settings-title p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(65, 242, 255, 0.1);
+        }
+
+        .form-help {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        .password-requirements {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .password-requirements h4 {
+            font-size: 14px;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .password-requirements ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .password-requirements li {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .password-requirements li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            padding: 14px 32px;
+            background: var(--gradient-main);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(65, 242, 255, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            padding: 14px 32px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: var(--glass-border);
+            transform: translateY(-2px);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: rgba(0, 255, 148, 0.1);
+            border: 1px solid rgba(0, 255, 148, 0.3);
+            color: var(--success);
+        }
+
+        .alert-error {
+            background: rgba(255, 71, 87, 0.1);
+            border: 1px solid rgba(255, 71, 87, 0.3);
+            color: var(--error);
+        }
+
+        .alert i {
+            font-size: 18px;
+        }
+
+        /* Spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="brand">
+                <div class="logo">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div>
+                    <h1>ELECTRONICK</h1>
+                    <div class="subtitle">Neural Network Bot Manager</div>
+                </div>
+            </div>
+            
+            <nav class="nav">
+                <a href="/" class="nav-btn">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <a href="/api/v2/docs" class="nav-btn">
+                    <i class="fas fa-code"></i> API
+                </a>
+                <button class="nav-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Выйти
+                </button>
+            </nav>
+        </header>
+
+        <!-- Settings -->
+        <div class="settings-container">
+            <div class="settings-card">
+                <div class="settings-header">
+                    <div class="settings-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <div class="settings-title">
+                        <h2>Смена пароля</h2>
+                        <p>Обновите свой пароль для безопасности системы</p>
+                    </div>
+                </div>
+
+                <!-- Alert -->
+                <div id="alert" class="hidden"></div>
+
+                <!-- Password Change Form -->
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label class="form-label" for="current_password">Текущий пароль</label>
+                        <input 
+                            type="password" 
+                            class="form-input" 
+                            id="current_password" 
+                            name="current_password"
+                            placeholder="Введите текущий пароль"
+                            required
+                            autocomplete="current-password"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="new_password">Новый пароль</label>
+                        <input 
+                            type="password" 
+                            class="form-input" 
+                            id="new_password" 
+                            name="new_password"
+                            placeholder="Введите новый пароль (минимум 8 символов)"
+                            required
+                            autocomplete="new-password"
+                            minlength="8"
+                        >
+                        <small class="form-help">Минимум 8 символов</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="confirm_password">Подтверждение пароля</label>
+                        <input 
+                            type="password" 
+                            class="form-input" 
+                            id="confirm_password" 
+                            name="confirm_password"
+                            placeholder="Повторите новый пароль"
+                            required
+                            autocomplete="new-password"
+                            minlength="8"
+                        >
+                    </div>
+
+                    <div class="password-requirements">
+                        <h4><i class="fas fa-shield-alt"></i> Требования к паролю</h4>
+                        <ul>
+                            <li>Минимум 8 символов</li>
+                            <li>Должен отличаться от текущего пароля</li>
+                            <li>Рекомендуется использовать буквы, цифры и специальные символы</li>
+                        </ul>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary" id="submitBtn">
+                            <i class="fas fa-check"></i>
+                            <span id="btnText">Изменить пароль</span>
+                            <span id="btnSpinner" class="spinner hidden"></span>
+                        </button>
+                        <a href="/" class="btn-secondary">
+                            <i class="fas fa-times"></i>
+                            Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showAlert(message, type) {
+            const alert = $('#alert');
+            const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
+            
+            alert.removeClass('hidden alert-success alert-error')
+                .addClass(`alert-${type}`)
+                .html(`<i class="fas fa-${icon}"></i><span>${message}</span>`);
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                alert.addClass('hidden');
+            }, 5000);
+        }
+
+        function logout() {
+            if (confirm('Вы уверены, что хотите выйти из системы?')) {
+                window.location.href = '/logout';
+            }
+        }
+
+        $('#passwordForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            const currentPassword = $('#current_password').val();
+            const newPassword = $('#new_password').val();
+            const confirmPassword = $('#confirm_password').val();
+            
+            // Client-side validation
+            if (newPassword.length < 8) {
+                showAlert('Новый пароль должен содержать минимум 8 символов', 'error');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showAlert('Пароли не совпадают', 'error');
+                return;
+            }
+            
+            if (newPassword === currentPassword) {
+                showAlert('Новый пароль должен отличаться от текущего', 'error');
+                return;
+            }
+            
+            // Show loading state
+            $('#submitBtn').prop('disabled', true);
+            $('#btnText').text('Изменение...');
+            $('#btnSpinner').removeClass('hidden');
+            
+            // Send request
+            $.ajax({
+                url: '/api/v2/auth/change-password',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    current_password: currentPassword,
+                    new_password: newPassword
+                }),
+                success: function(response) {
+                    showAlert(response.message || 'Пароль успешно изменён!', 'success');
+                    $('#passwordForm')[0].reset();
+                    
+                    // Redirect to dashboard after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
+                },
+                error: function(xhr) {
+                    const message = xhr.responseJSON?.message || 'Ошибка при изменении пароля';
+                    showAlert(message, 'error');
+                },
+                complete: function() {
+                    $('#submitBtn').prop('disabled', false);
+                    $('#btnText').text('Изменить пароль');
+                    $('#btnSpinner').addClass('hidden');
+                }
+            });
+        });
+
+        // Check auth status
+        $(document).ready(function() {
+            $.ajax({
+                url: '/api/v2/system/health',
+                method: 'GET',
+                timeout: 5000,
+                error: function(xhr) {
+                    if (xhr.status === 401) {
+                        window.location.href = '/login';
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
