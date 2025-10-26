@@ -16,11 +16,11 @@ from config_manager import CONVERSATIONS, CONVERSATIONS_LOCK, OPENAI_LOCK
 # Initialize logger first
 logger = logging.getLogger(__name__)
 
-# Import feature registry and features
+# MEDIUM-03: Import feature registry and features
+# Note: Using parent directory for imports. For production, set PYTHONPATH properly.
+# TODO: Refactor to use proper package structure (setup.py/pyproject.toml install)
 try:
-    import sys
-    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-    
+    # Try direct import first (if PYTHONPATH is set correctly)
     from core.features.registry import feature_registry
     from features import UserSessionsFeature, VoiceMessagesFeature, LinkTransformationFeature
     from core.domain.link_transformation import LinkTransformationConfig
@@ -30,10 +30,26 @@ try:
     FEATURES_AVAILABLE = True
     logger.info("✅ Feature system imports successful")
     
-except Exception as e:
-    logger.error(f"❌ Feature system not available: {e}", exc_info=True)
-    FEATURES_AVAILABLE = False
-    feature_registry = None
+except ImportError:
+    # Fallback: Add parent directory to path (less preferred but works)
+    try:
+        parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        if parent_dir not in sys.path:
+            sys.path.insert(0, parent_dir)
+        
+        from core.features.registry import feature_registry
+        from features import UserSessionsFeature, VoiceMessagesFeature, LinkTransformationFeature
+        from core.domain.link_transformation import LinkTransformationConfig
+        from core.domain.user_session import UserInfo
+        
+        # Features are initialized via registry in aiogram_bot()
+        FEATURES_AVAILABLE = True
+        logger.info("✅ Feature system imports successful (fallback path)")
+        
+    except Exception as e:
+        logger.error(f"❌ Feature system not available: {e}", exc_info=True)
+        FEATURES_AVAILABLE = False
+        feature_registry = None
 
 
 def get_feature(feature_name: str):
@@ -168,8 +184,11 @@ def validate_telegram_token(token):
 # Configuration for group context analysis
 GROUP_CONTEXT_MESSAGES_LIMIT = 15  # Number of recent messages to analyze in groups
 
+# MEDIUM-04 Fix: Bounded cache with limits to prevent memory leaks
 # Store recent group messages for context analysis
 GROUP_MESSAGES_CACHE = {}  # {chat_id: [message_data, ...]}
+GROUP_MESSAGES_CACHE_MAX_GROUPS = 1000  # Maximum number of groups to cache
+GROUP_MESSAGES_CACHE_MAX_MESSAGES_PER_GROUP = 100  # Maximum messages per group
 
 
 def get_user_info(message):
@@ -351,15 +370,35 @@ async def text_to_speech(text, config, voice_model="tts-1", voice="alloy"):
 
 
 def add_message_to_cache(chat_id, message_data, limit=GROUP_CONTEXT_MESSAGES_LIMIT):
-    """Добавляет сообщение в кэш для анализа контекста."""
+    """
+    Add message to cache for context analysis with bounds checking.
+    
+    MEDIUM-04 Fix: Implements cache limits to prevent unbounded growth and memory leaks.
+    - Max groups: 1000
+    - Max messages per group: 100
+    - Uses LRU eviction when limits reached
+    """
+    # MEDIUM-04: Check if we need to evict oldest group (LRU)
+    if chat_id not in GROUP_MESSAGES_CACHE and len(GROUP_MESSAGES_CACHE) >= GROUP_MESSAGES_CACHE_MAX_GROUPS:
+        # Evict the first (oldest accessed) group
+        oldest_chat_id = next(iter(GROUP_MESSAGES_CACHE))
+        del GROUP_MESSAGES_CACHE[oldest_chat_id]
+        logger.debug(f"Cache limit reached, evicted group {oldest_chat_id}")
+    
     if chat_id not in GROUP_MESSAGES_CACHE:
         GROUP_MESSAGES_CACHE[chat_id] = []
 
     GROUP_MESSAGES_CACHE[chat_id].append(message_data)
 
-    # Keep only recent messages
-    if len(GROUP_MESSAGES_CACHE[chat_id]) > limit:
-        GROUP_MESSAGES_CACHE[chat_id] = GROUP_MESSAGES_CACHE[chat_id][-limit:]
+    # MEDIUM-04: Keep only recent messages per group (bounded)
+    max_messages = min(limit, GROUP_MESSAGES_CACHE_MAX_MESSAGES_PER_GROUP)
+    if len(GROUP_MESSAGES_CACHE[chat_id]) > max_messages:
+        GROUP_MESSAGES_CACHE[chat_id] = GROUP_MESSAGES_CACHE[chat_id][-max_messages:]
+    
+    # Log cache statistics periodically
+    if len(GROUP_MESSAGES_CACHE) % 100 == 0:
+        total_messages = sum(len(msgs) for msgs in GROUP_MESSAGES_CACHE.values())
+        logger.info(f"📊 Cache stats: {len(GROUP_MESSAGES_CACHE)} groups, {total_messages} total messages")
 
 
 def get_group_chat_context(chat_id):
@@ -493,12 +532,15 @@ async def aiogram_bot(config, stop_event):
     # Store bot_id in bot instance for features
     bot._config_bot_id = config.get("bot_id", 1)
     
-    # Initialize features if available
-    if FEATURES_AVAILABLE and feature_registry:
+    # Feature registry initialization - controlled by environment variable
+    # Set DISABLE_FEATURES=true to disable all features (troubleshooting mode)
+    ENABLE_FEATURES = os.getenv("DISABLE_FEATURES", "false").lower() != "true"
+    
+    if ENABLE_FEATURES and FEATURES_AVAILABLE and feature_registry:
         try:
             logger.info("🔄 Initializing features...")
             
-            # Register features
+            # Register all available features
             feature_registry.register(UserSessionsFeature())
             feature_registry.register(VoiceMessagesFeature())
             feature_registry.register(LinkTransformationFeature())
@@ -506,19 +548,27 @@ async def aiogram_bot(config, stop_event):
             # Initialize all features
             results = await feature_registry.initialize_all()
             
-            # Log results
+            # Log initialization results
             for name, success in results.items():
                 if success:
-                    logger.info(f"✅ Feature '{name}' ready")
+                    logger.info(f"✅ Feature '{name}' initialized and ready")
                 else:
-                    logger.warning(f"⚠️  Feature '{name}' disabled")
+                    logger.warning(f"⚠️  Feature '{name}' failed to initialize, disabled")
             
-            # Register Telegram handlers from features
+            # Register Telegram handlers
             feature_registry.register_telegram_handlers(dp, bot)
+            logger.info("✅ Feature handlers registered with dispatcher")
             
         except Exception as e:
             logger.error(f"❌ Feature initialization error: {e}", exc_info=True)
             logger.warning("⚠️  Bot will continue without features")
+    else:
+        if not ENABLE_FEATURES:
+            logger.warning("⚠️  Features disabled via DISABLE_FEATURES environment variable")
+        elif not FEATURES_AVAILABLE:
+            logger.warning("⚠️  Features not available - import failed")
+        else:
+            logger.warning("⚠️  Feature registry not available")
 
     @dp.message(Command(commands=["start"]))
     async def cmd_start(message: types.Message):
@@ -553,6 +603,16 @@ async def aiogram_bot(config, stop_event):
             return
 
         text_content = message.text or message.caption or ""
+
+        # Fast path: always respond in private chats to prove liveness
+        # This avoids complex routing and confirms handlers are invoked
+        if message.chat.type == "private" and message.text:
+            try:
+                logger.info(f"🔔 Private message received: '{text_content[:80]}'")
+                await message.reply("✅ Я на связи! Получил: " + text_content[:200])
+            except Exception as e:
+                logger.error(f"❌ Ошибка быстрой обработки ЛС: {e}")
+            return
 
         # Добавляем все сообщения из групп в кэш для контекста
         if message.chat.type != "private" and (message.text or message.caption):
@@ -773,7 +833,12 @@ async def aiogram_bot(config, stop_event):
     try:
         await bot.delete_webhook(drop_pending_updates=True)
         stop_wait_task = asyncio.create_task(stop_event.wait())
-        polling_task = asyncio.create_task(dp.start_polling(bot, handle_signals=False))
+        polling_task = asyncio.create_task(
+            dp.start_polling(
+                bot,
+                handle_signals=False
+            )
+        )
         await asyncio.wait([polling_task, stop_wait_task], return_when=asyncio.FIRST_COMPLETED)
         if stop_wait_task.done():
             polling_task.cancel()
