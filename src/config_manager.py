@@ -2,8 +2,22 @@ import json
 import logging
 import os
 import threading
+import shutil
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
+
+# HIGH-03: Import encryption service for secrets at rest
+try:
+    from shared.crypto import encrypt_sensitive_fields, decrypt_sensitive_fields, is_encryption_available
+    ENCRYPTION_AVAILABLE = True
+    if is_encryption_available():
+        logger.info("🔒 Encryption service available - secrets will be encrypted at rest")
+    else:
+        logger.warning("⚠️ Encryption key not set (ENCRYPTION_KEY env var). Secrets stored in plaintext!")
+except ImportError as e:
+    logger.warning(f"⚠️ Encryption service not available: {e}. Secrets stored in plaintext!")
+    ENCRYPTION_AVAILABLE = False
 
 BOT_CONFIGS = {}
 NEXT_BOT_ID = 1
@@ -26,7 +40,7 @@ ADMIN_BOT_CONFIG = {
 
 
 def load_configs():
-    """Загружает конфигурации ботов из файла"""
+    """Load bot configurations from file with automatic decryption"""
     global NEXT_BOT_ID, ADMIN_BOT_CONFIG
     try:
         if os.path.exists(CONFIG_FILE):
@@ -34,15 +48,20 @@ def load_configs():
                 data = json.load(f)
                 BOT_CONFIGS.clear()
                 
-                # Загрузка обычных ботов
+                # Load regular bots
                 if "bots" in data:
                     for k, v in data["bots"].items():
-                        # Восстанавливаем полную структуру бота с runtime полями
-                        # При загрузке все боты останавливаются (runtime объекты не сохраняются)
+                        # HIGH-03: Decrypt sensitive fields if encryption available
+                        config = v["config"].copy()
+                        if ENCRYPTION_AVAILABLE and is_encryption_available():
+                            config = decrypt_sensitive_fields(config)
+                        
+                        # Restore full bot structure with runtime fields
+                        # All bots stopped on load (runtime objects not saved)
                         bot_entry = {
                             "id": v["id"],
-                            "config": v["config"],
-                            "status": "stopped",  # Принудительно останавливаем все боты при перезапуске
+                            "config": config,
+                            "status": "stopped",  # Force stop all bots on restart
                             "thread": None,
                             "loop": None,
                             "stop_event": None,
@@ -50,19 +69,23 @@ def load_configs():
                         BOT_CONFIGS[int(k)] = bot_entry
 
                     NEXT_BOT_ID = max([int(k) for k in data["bots"].keys()] + [0]) + 1
-                    logger.info(f"Конфигурации ботов загружены из файла: {len(BOT_CONFIGS)} ботов")
+                    logger.info(f"Bot configurations loaded from file: {len(BOT_CONFIGS)} bots")
                 
-                # Загрузка admin bot конфигурации
+                # Load admin bot configuration
                 if "admin_bot" in data and data["admin_bot"]:
-                    ADMIN_BOT_CONFIG.update(data["admin_bot"])
-                    logger.info("Admin bot конфигурация загружена из файла")
+                    admin_config = data["admin_bot"].copy()
+                    if ENCRYPTION_AVAILABLE and is_encryption_available():
+                        admin_config = decrypt_sensitive_fields(admin_config)
+                    ADMIN_BOT_CONFIG.update(admin_config)
+                    logger.info("Admin bot configuration loaded from file")
                 else:
-                    logger.info("Admin bot конфигурация не найдена в файле, используются значения по умолчанию")
+                    logger.info("Admin bot configuration not found in file, using defaults")
                     
         else:
-            logger.info(f"Файл {CONFIG_FILE} не существует, будет создан новый")
+            logger.info(f"File {CONFIG_FILE} does not exist, will be created")
     except Exception as e:
-        logger.error(f"Ошибка загрузки конфигураций: {e}")
+        logger.error(f"Error loading configurations: {e}")
+        logger.exception("Full traceback:")
 
 
 def save_configs_async():
@@ -100,36 +123,57 @@ def save_configs_async():
 
 
 def save_configs():
-    """Синхронно сохраняет конфигурации в файл"""
+    """Synchronously save configurations to file with automatic encryption"""
     try:
         if os.path.exists(CONFIG_FILE) and not os.access(CONFIG_FILE, os.W_OK):
-            raise PermissionError(f"Нет прав на запись в {CONFIG_FILE}")
+            raise PermissionError(f"No write permissions for {CONFIG_FILE}")
+
+        # HIGH-03: Create backup before saving (for migration safety)
+        if os.path.exists(CONFIG_FILE):
+            backup_file = f"{CONFIG_FILE}.backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            try:
+                shutil.copy2(CONFIG_FILE, backup_file)
+                logger.info(f"📦 Configuration backup created: {backup_file}")
+            except Exception as backup_error:
+                logger.warning(f"⚠️ Could not create backup: {backup_error}")
 
         with BOT_CONFIGS_LOCK:
-            # Очищаем конфигурацию от несериализуемых объектов
+            # Clean configuration from non-serializable objects
             clean_configs = {}
             for k, v in BOT_CONFIGS.items():
+                config = v["config"].copy()
+                
+                # HIGH-03: Encrypt sensitive fields before saving
+                if ENCRYPTION_AVAILABLE and is_encryption_available():
+                    config = encrypt_sensitive_fields(config)
+                
                 clean_bot = {
                     "id": v["id"],
-                    "config": v["config"],
+                    "config": config,
                     "status": v.get("status", "stopped"),
-                    # Исключаем thread, loop, stop_event - они не сериализуются в JSON
+                    # Exclude thread, loop, stop_event - they don't serialize to JSON
                 }
                 clean_configs[str(k)] = clean_bot
 
-            # Сохраняем обычные боты И admin bot конфигурацию
+            # HIGH-03: Encrypt admin bot secrets
+            admin_config = ADMIN_BOT_CONFIG.copy()
+            if ENCRYPTION_AVAILABLE and is_encryption_available():
+                admin_config = encrypt_sensitive_fields(admin_config)
+            
+            # Save regular bots AND admin bot configuration
             data = {
                 "bots": clean_configs,
-                "admin_bot": ADMIN_BOT_CONFIG.copy()  # Добавляем admin bot конфигурацию
+                "admin_bot": admin_config
             }
             
             temp_file = CONFIG_FILE + ".tmp"
             with open(temp_file, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
             os.replace(temp_file, CONFIG_FILE)
-            logger.info("Конфигурации ботов и admin bot сохранены в файл")
+            logger.info("🔒 Bot and admin bot configurations saved to file (secrets encrypted)")
     except Exception as e:
-        logger.error(f"Ошибка сохранения конфигураций: {e}")
+        logger.error(f"Error saving configurations: {e}")
+        logger.exception("Full traceback:")
         raise
 
 
