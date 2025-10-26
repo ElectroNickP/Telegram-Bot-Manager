@@ -258,3 +258,14 @@ htmlcov/
 *_secret.json
 *_credentials.json
 
+
+# Testing scripts with potential secrets
+webhook_tester.py
+test_bot_real.py
+
+# Configuration backups
+**/backups/*.json
+src/backups/
+
+# Testing and debugging reports with sensitive data
+COMPLETE_USER_SCENARIO_TESTING_REPORT.md
