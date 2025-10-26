@@ -1,4 +1,4 @@
-# 🚀 Telegram Bot Manager v3.8.1 - Smart Port Management & Auto-Cleanup
+# 🚀 Telegram Bot Manager v3.8.3 - Production Ready Release
 
 **Профессиональная система управления Telegram ботами** с веб-интерфейсом и встроенным маркетплейсом.  
 ✅ **Готово к развертыванию на продакшен серверах Ubuntu одной командой!**
@@ -168,7 +168,7 @@ pytest tests/e2e/    # End-to-end тесты
 
 Этот проект лицензирован под MIT License.
 
-## 🏆 Версия 3.7.0 - Production Ready
+## 🏆 Версия 3.8.3 - Production Ready
 
 ### ✅ Новое в этой версии:
 - **One-Click Ubuntu Deployment** - автоматическая установка на серверах

@@ -6,9 +6,12 @@ This is the new modularized version of the Flask application with feature-based 
 """
 
 import logging
+import os
 import sys
+import secrets
 from datetime import timedelta
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, request, redirect
+from logging.handlers import RotatingFileHandler
 
 # Import new modular components
 from api.auth import auth_bp
@@ -23,25 +26,54 @@ from shared.utils import datetime_filter, find_free_port
 import config_manager as cm
 import bot_manager as bm
 
-# Import feature registry and features
+# MEDIUM-03: Import feature registry and features
+# Note: Using parent directory for imports. For production, set PYTHONPATH properly.
+# TODO: Refactor to use proper package structure (setup.py/pyproject.toml install)
 try:
-    sys.path.append('..')
+    # Try direct import first (if PYTHONPATH is set correctly)
     from core.features.registry import feature_registry
     from features import UserSessionsFeature, VoiceMessagesFeature, LinkTransformationFeature
     FEATURES_AVAILABLE = True
     logger_features = logging.getLogger(__name__)
     logger_features.info("✅ Feature system imports successful (app)")
-except Exception as e:
-    logger_features = logging.getLogger(__name__)
-    logger_features.error(f"❌ Feature system not available: {e}")
-    FEATURES_AVAILABLE = False
-    feature_registry = None
+except ImportError:
+    # Fallback: Add parent directory to path (less preferred but works)
+    try:
+        parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        if parent_dir not in sys.path:
+            sys.path.insert(0, parent_dir)
+        from core.features.registry import feature_registry
+        from features import UserSessionsFeature, VoiceMessagesFeature, LinkTransformationFeature
+        FEATURES_AVAILABLE = True
+        logger_features = logging.getLogger(__name__)
+        logger_features.info("✅ Feature system imports successful (app - fallback path)")
+    except Exception as e:
+        logger_features = logging.getLogger(__name__)
+        logger_features.error(f"❌ Feature system not available: {e}")
+        FEATURES_AVAILABLE = False
+        feature_registry = None
 
-# Configure logging
+# Configure logging with rotation - MEDIUM-05 fix
+log_formatter = logging.Formatter("[%(asctime)s] %(levelname)s: %(message)s")
+
+# Create rotating file handler (max 10MB, keep 5 backup files)
+file_handler = RotatingFileHandler(
+    "bot.log", 
+    maxBytes=10*1024*1024,  # 10MB
+    backupCount=5
+)
+file_handler.setFormatter(log_formatter)
+file_handler.setLevel(logging.INFO)
+
+# Create console handler
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(log_formatter)
+console_handler.setLevel(logging.INFO)
+
+# Configure root logger
 logging.basicConfig(
     level=logging.INFO,
-    format="[%(asctime)s] %(levelname)s: %(message)s",
-    handlers=[logging.FileHandler("bot.log"), logging.StreamHandler()],
+    handlers=[file_handler, console_handler],
 )
 logger = logging.getLogger(__name__)
 
@@ -65,8 +97,10 @@ def create_app():
     
     app = Flask(__name__, template_folder="templates")
     
-    # TODO: Move to environment variable (security issue from audit)
-    app.secret_key = "your-secret-key-change-in-production"
+    # HIGH-01 Security Fix: Secret key from environment or generate secure random
+    app.secret_key = os.getenv('FLASK_SECRET_KEY', secrets.token_hex(32))
+    if app.secret_key == secrets.token_hex(32):
+        logger.warning("⚠️ Using randomly generated secret key. Set FLASK_SECRET_KEY env variable for production!")
     
     # Configure Jinja2 filters
     app.jinja_env.filters["datetime"] = datetime_filter
@@ -78,16 +112,45 @@ def create_app():
             from __version__ import FULL_VERSION
             return dict(app_version=FULL_VERSION)
         except ImportError:
-            return dict(app_version="v3.7.6 - Complete Symlink Fix")
+            return dict(app_version="v3.8.3 - Production Ready")
 
-    # Session configuration
+    # HIGH-01 Security Fix: Session configuration with HTTPS enforcement for production
+    is_production = os.getenv('ENVIRONMENT', 'development') == 'production'
+    force_https = os.getenv('FORCE_HTTPS', 'true' if is_production else 'false').lower() == 'true'
+    
     app.config.update(
-        SESSION_COOKIE_SECURE=False,
+        SESSION_COOKIE_SECURE=force_https,  # Only send cookie over HTTPS in production
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
         PERMANENT_SESSION_LIFETIME=timedelta(hours=24),
         SESSION_COOKIE_NAME="electronick_session"
     )
+    
+    # HIGH-01: HTTPS enforcement middleware for production
+    if force_https:
+        @app.before_request
+        def enforce_https():
+            """Redirect HTTP to HTTPS in production"""
+            if not request.is_secure and request.headers.get('X-Forwarded-Proto', 'http') != 'https':
+                url = request.url.replace('http://', 'https://', 1)
+                return redirect(url, code=301)
+        
+        @app.after_request
+        def add_security_headers(response):
+            """Add security headers including HSTS"""
+            # HSTS: Force HTTPS for 1 year
+            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+            # Prevent MIME type sniffing
+            response.headers['X-Content-Type-Options'] = 'nosniff'
+            # XSS Protection
+            response.headers['X-XSS-Protection'] = '1; mode=block'
+            # Clickjacking protection
+            response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+            # Referrer policy
+            response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+            return response
+        
+        logger.info("🔒 HTTPS enforcement and security headers enabled for production")
     
     # Register blueprints
     app.register_blueprint(auth_bp)
@@ -144,4 +207,5 @@ def create_app():
 if __name__ == "__main__":
     app = create_app()
     port = find_free_port(start_port=5000)
-    app.run(host="0.0.0.0", port=port, debug=True)
+    # Disable reloader and debugger in this mode to avoid duplicate processes/signals
+    app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
