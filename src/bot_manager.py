@@ -2,6 +2,7 @@ import asyncio
 import logging
 import threading
 
+import config_manager as cm
 from config_manager import BOT_CONFIGS, BOT_CONFIGS_LOCK
 from telegram_bot import aiogram_bot
 
@@ -14,7 +15,7 @@ def run_bot(bot_entry):
     asyncio.set_event_loop(loop)
 
     bot_entry["loop"] = loop
-    bot_entry["status"] = "running"
+    # Статус "running" уже установлен в start_bot_thread
     stop_event = asyncio.Event()
     bot_entry["stop_event"] = stop_event
 
@@ -28,6 +29,8 @@ def run_bot(bot_entry):
         bot_entry["thread"] = None
         bot_entry["stop_event"] = None
         loop.close()
+        # Синхронно сохраняем статус, чтобы избежать race condition при перезагрузке страницы
+        cm.save_configs()
 
 
 def start_bot_thread(bot_id):
@@ -42,11 +45,16 @@ def start_bot_thread(bot_id):
             logger.warning(f"Бот {bot_id} уже запущен.")
             return False, "Бот уже запущен"
 
+        # Устанавливаем статус ДО запуска потока
+        bot_entry["status"] = "running"
         thread = threading.Thread(target=run_bot, args=(bot_entry,), daemon=True)
         bot_entry["thread"] = thread
         thread.start()
         logger.info(f"Бот {bot_id} успешно запущен.")
-        return True, "Бот запущен"
+        
+    # Синхронно сохраняем статус после запуска (вне блокировки)
+    cm.save_configs()
+    return True, "Бот запущен"
 
 
 def stop_bot_thread(bot_id):

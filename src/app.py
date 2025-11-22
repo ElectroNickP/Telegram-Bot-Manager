@@ -40,10 +40,9 @@ def create_app():
         cm.load_configs()
         logger.info(f"📋 Loaded {len(cm.BOT_CONFIGS)} bot(s) from configuration file")
         
-        # Temporarily disable auto-starting bots to fix startup issues
-        # TODO: Re-enable after fixing the startup flow
-        # bm.start_all_bots()
-        logger.info("⚠️ Auto-start bots disabled during startup troubleshooting")
+        # Auto-start all configured bots
+        bm.start_all_bots()
+        logger.info("✅ Auto-start bots enabled")
         
     except Exception as e:
         logger.error(f"❌ Failed to load configurations: {e}")
@@ -109,5 +108,7 @@ def create_app():
 
 if __name__ == "__main__":
     app = create_app()
-    port = find_free_port(start_port=5000)
-    app.run(host="0.0.0.0", port=port, debug=True)
+    # Use fixed port 5000 for production deployment
+    port = 5000
+    # Debug mode disabled for production to avoid process forking conflicts
+    app.run(host="0.0.0.0", port=port, debug=False)
