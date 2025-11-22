@@ -1,0 +1,444 @@
+<!-- Link Transformation Configuration Modal -->
+<div class="modal fade" id="linkTransformationModal" tabindex="-1" aria-labelledby="linkTransformationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="linkTransformationModalLabel">
+          <i class="fas fa-link text-primary"></i>
+          Настройка преобразования ссылок в кнопки
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="container-fluid">
+          
+          <!-- Main Toggle and Settings -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                      <i class="fas fa-toggle-on text-success"></i>
+                      Основные настройки
+                    </h6>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="linkTransformationEnabled">
+                      <label class="form-check-label" for="linkTransformationEnabled">
+                        Включить преобразование ссылок
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card-body" id="linkTransformationSettings">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="maxButtonsPerMessage" class="form-label">
+                          Максимум кнопок в сообщении
+                        </label>
+                        <input type="number" class="form-control" id="maxButtonsPerMessage" 
+                               min="1" max="10" value="5">
+                        <div class="form-text">От 1 до 10 кнопок в одном сообщении</div>
+                      </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="buttonLayout" class="form-label">
+                          Расположение кнопок
+                        </label>
+                        <select class="form-select" id="buttonLayout">
+                          <option value="vertical">Вертикально (каждая кнопка в ряду)</option>
+                          <option value="horizontal">Горизонтально (все в одном ряду)</option>
+                          <option value="auto">Автоматически (по 2 кнопки в ряду)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="processAiResponses" checked>
+                        <label class="form-check-label" for="processAiResponses">
+                          Обрабатывать ответы ИИ
+                        </label>
+                      </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="preserveFormatting" checked>
+                        <label class="form-check-label" for="preserveFormatting">
+                          Сохранять форматирование сообщений
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Transformation Rules -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                      <i class="fas fa-magic text-warning"></i>
+                      Правила преобразования
+                    </h6>
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-outline-primary btn-sm" id="addRuleBtn">
+                        <i class="fas fa-plus"></i> Добавить правило
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-templates"></i> Шаблоны
+                      </button>
+                      <ul class="dropdown-menu" id="ruleTemplatesDropdown">
+                        <!-- Templates will be loaded here -->
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card-body">
+                  <div id="transformationRules">
+                    <div class="text-center text-muted py-4" id="noRulesMessage">
+                      <i class="fas fa-info-circle fa-2x mb-2"></i>
+                      <p>Нет настроенных правил преобразования</p>
+                      <small>Добавьте правило или выберите шаблон для начала работы</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Test Section -->
+          <div class="row">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">
+                  <h6 class="mb-0">
+                    <i class="fas fa-vial text-info"></i>
+                    Тестирование преобразования
+                  </h6>
+                </div>
+                
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label for="testText" class="form-label">
+                      Введите текст со ссылками для тестирования
+                    </label>
+                    <textarea class="form-control" id="testText" rows="3" 
+                              placeholder="Например: Вот полезная ссылка https://script.google.com/d/abc123/edit для автоматизации."></textarea>
+                  </div>
+                  
+                  <div class="d-flex gap-2 mb-3">
+                    <button type="button" class="btn btn-outline-info" id="testTransformationBtn">
+                      <i class="fas fa-play"></i> Тестировать
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" id="clearTestBtn">
+                      <i class="fas fa-eraser"></i> Очистить
+                    </button>
+                  </div>
+                  
+                  <div id="testResults" style="display: none;">
+                    <hr>
+                    <h6>Результат преобразования:</h6>
+                    
+                    <div class="row">
+                      <div class="col-md-6">
+                        <strong>Исходный текст:</strong>
+                        <div class="bg-light p-2 rounded mt-1" id="originalText"></div>
+                      </div>
+                      
+                      <div class="col-md-6">
+                        <strong>Обработанный текст:</strong>
+                        <div class="bg-light p-2 rounded mt-1" id="processedText"></div>
+                      </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                      <strong>Кнопки:</strong>
+                      <div id="previewButtons" class="mt-2"></div>
+                    </div>
+                    
+                    <div class="mt-3">
+                      <small class="text-muted">
+                        <strong>Статистика:</strong>
+                        <span id="testStats"></span>
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times"></i> Отмена
+        </button>
+        <button type="button" class="btn btn-primary" id="saveLinkTransformationBtn">
+          <i class="fas fa-save"></i> Сохранить настройки
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Rule Editor Modal -->
+<div class="modal fade" id="ruleEditorModal" tabindex="-1" aria-labelledby="ruleEditorModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ruleEditorModalLabel">
+          <i class="fas fa-edit text-primary"></i>
+          <span id="ruleEditorTitle">Новое правило</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <div class="modal-body">
+        <form id="ruleEditorForm">
+          <input type="hidden" id="ruleId">
+          
+          <!-- Rule Basic Info -->
+          <div class="row mb-3">
+            <div class="col-md-8">
+              <label for="ruleName" class="form-label">
+                <i class="fas fa-tag"></i> Название правила *
+              </label>
+              <input type="text" class="form-control" id="ruleName" required
+                     placeholder="Например: Google Scripts">
+            </div>
+            
+            <div class="col-md-4">
+              <label for="rulePriority" class="form-label">
+                <i class="fas fa-sort-numeric-up"></i> Приоритет
+              </label>
+              <input type="number" class="form-control" id="rulePriority" value="0"
+                     placeholder="0">
+              <div class="form-text">Больше = выше приоритет</div>
+            </div>
+          </div>
+          
+          <!-- Matching Criteria -->
+          <div class="card mb-3">
+            <div class="card-header">
+              <h6 class="mb-0">
+                <i class="fas fa-search"></i> Критерии совпадения
+              </h6>
+            </div>
+            
+            <div class="card-body">
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="matchType" class="form-label">Тип совпадения *</label>
+                  <select class="form-select" id="matchType" required>
+                    <option value="">Выберите тип...</option>
+                    <option value="domain">По домену</option>
+                    <option value="url_contains">URL содержит текст</option>
+                    <option value="url_regex">Регулярное выражение</option>
+                    <option value="full_url">Точное совпадение URL</option>
+                  </select>
+                </div>
+                
+                <div class="col-md-6">
+                  <label for="matchValue" class="form-label">Значение для поиска *</label>
+                  <input type="text" class="form-control" id="matchValue" required
+                         placeholder="script.google.com">
+                  <div class="form-text" id="matchValueHelp">Введите значение для сопоставления</div>
+                </div>
+              </div>
+              
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="caseSensitive">
+                <label class="form-check-label" for="caseSensitive">
+                  Учитывать регистр
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Button Configuration -->
+          <div class="card mb-3">
+            <div class="card-header">
+              <h6 class="mb-0">
+                <i class="fas fa-mouse-pointer"></i> Настройки кнопки
+              </h6>
+            </div>
+            
+            <div class="card-body">
+              <div class="row mb-3">
+                <div class="col-md-8">
+                  <label for="buttonText" class="form-label">Текст кнопки *</label>
+                  <input type="text" class="form-control" id="buttonText" required
+                         placeholder="🔗 Открыть ссылку" maxlength="64">
+                  <div class="form-text">Максимум 64 символа. Можно использовать {domain} и {url}</div>
+                </div>
+                
+                <div class="col-md-4">
+                  <label for="buttonEmoji" class="form-label">Эмодзи</label>
+                  <input type="text" class="form-control" id="buttonEmoji"
+                         placeholder="🔗" maxlength="4">
+                </div>
+              </div>
+              
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="removeOriginalLink" checked>
+                <label class="form-check-label" for="removeOriginalLink">
+                  Удалять оригинальную ссылку из текста
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Preview Text (Advanced) -->
+          <div class="card mb-3">
+            <div class="card-header">
+              <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">
+                  <i class="fas fa-eye"></i> Предпросмотр (дополнительно)
+                </h6>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="addPreviewText">
+                  <label class="form-check-label" for="addPreviewText">Включить</label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card-body" id="previewTextSettings" style="display: none;">
+              <div class="mb-3">
+                <label for="previewText" class="form-label">Текст предпросмотра</label>
+                <input type="text" class="form-control" id="previewText"
+                       placeholder="Ссылка на {domain}">
+                <div class="form-text">Текст, который заменит ссылку. Поддерживает {domain} и {url}</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Rule Testing -->
+          <div class="card">
+            <div class="card-header">
+              <h6 class="mb-0">
+                <i class="fas fa-vial"></i> Тестирование правила
+              </h6>
+            </div>
+            
+            <div class="card-body">
+              <div class="mb-3">
+                <label for="testUrls" class="form-label">Тестовые URL (по одному на строке)</label>
+                <textarea class="form-control" id="testUrls" rows="3"
+                          placeholder="https://script.google.com/d/abc123/edit&#10;https://example.com/test&#10;https://github.com/user/repo"></textarea>
+              </div>
+              
+              <button type="button" class="btn btn-outline-info" id="testRuleBtn">
+                <i class="fas fa-play"></i> Тестировать правило
+              </button>
+              
+              <div id="ruleTestResults" class="mt-3" style="display: none;"></div>
+            </div>
+          </div>
+        </form>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times"></i> Отмена
+        </button>
+        <button type="button" class="btn btn-primary" id="saveRuleBtn">
+          <i class="fas fa-save"></i> Сохранить правило
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Custom styles for Link Transformation */
+.rule-item {
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  margin-bottom: 1rem;
+  transition: all 0.2s;
+}
+
+.rule-item:hover {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.rule-item.disabled {
+  opacity: 0.7;
+  background-color: #f8f9fa;
+}
+
+.rule-priority-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.test-result-match {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
+}
+
+.test-result-no-match {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+}
+
+.preview-button {
+  display: inline-block;
+  background-color: #0066cc;
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  margin: 2px;
+}
+
+.preview-button:hover {
+  background-color: #0052a3;
+  color: white;
+  text-decoration: none;
+}
+
+.match-type-help {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.transformation-stats {
+  background-color: #f8f9fa;
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+}
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+

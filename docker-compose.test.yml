@@ -1,0 +1,52 @@
+# Docker Compose для тестирования развертывания
+version: '3.8'
+
+services:
+  # Тест развертывания на Ubuntu 22.04
+  ubuntu-test:
+    build: .
+    container_name: telegram-bot-manager-ubuntu-test
+    volumes:
+      - ./logs:/home/testuser/telegram-bot-manager/logs
+      - ./test-results:/home/testuser/test-results
+    environment:
+      - TEST_MODE=1
+      - PYTHONPATH=/home/testuser/telegram-bot-manager
+    networks:
+      - test-network
+
+  # Тест клонирования из GitHub (имитация продакшена)
+  github-clone-test:
+    image: ubuntu:22.04
+    container_name: telegram-bot-manager-github-test
+    environment:
+      - DEBIAN_FRONTEND=noninteractive
+    volumes:
+      - ./test-results:/test-results
+    command: >
+      bash -c "
+        echo '🌐 ТЕСТ КЛОНИРОВАНИЯ ИЗ GITHUB' &&
+        apt-get update && 
+        apt-get install -y python3 python3-pip python3-venv git curl &&
+        cd /tmp &&
+        echo '📥 Клонирование репозитория...' &&
+        git clone https://github.com/ElectroNickP/Telegram-Bot-Manager.git &&
+        cd Telegram-Bot-Manager &&
+        echo '🔄 Переключение на ветку prod-test...' &&
+        git checkout prod-test &&
+        echo '📋 Проверка файлов...' &&
+        ls -la &&
+        echo '🧪 Запуск тестов...' &&
+        python3 deploy-test.py &&
+        echo '✅ GITHUB CLONE TEST COMPLETED' > /test-results/github-test.log
+      "
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge
+
+volumes:
+  test-results:
+

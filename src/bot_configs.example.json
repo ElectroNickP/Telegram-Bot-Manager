@@ -1,0 +1,58 @@
+{
+  "bots": {
+    "1": {
+      "id": 1,
+      "config": {
+        "bot_name": "Example Bot",
+        "telegram_token": "YOUR_TELEGRAM_BOT_TOKEN_HERE",
+        "openai_api_key": "YOUR_OPENAI_API_KEY_HERE",
+        "assistant_id": "YOUR_OPENAI_ASSISTANT_ID_HERE",
+        "group_context_limit": 15,
+        "enable_ai_responses": true,
+        "enable_voice_responses": true,
+        "marketplace": {
+          "enabled": true,
+          "username": "your_bot_username"
+        },
+        "voice_model": "tts-1",
+        "voice_type": "alloy",
+        "link_transformation": {
+          "enabled": true,
+          "max_buttons_per_message": 5,
+          "button_layout": "vertical",
+          "process_ai_responses": true,
+          "process_user_messages": false,
+          "preserve_message_formatting": true,
+          "transformation_rules": [
+            {
+              "id": "example_rule_1",
+              "name": "Example Rule for Google",
+              "enabled": true,
+              "match_type": "url_contains",
+              "match_value": "google.com",
+              "case_sensitive": false,
+              "button_text": "Открыть Google",
+              "button_emoji": "🔗",
+              "remove_original_link": true,
+              "add_preview_text": false,
+              "preview_text": "",
+              "priority": 1
+            }
+          ]
+        }
+      },
+      "status": "stopped"
+    }
+  },
+  "admin_bot": {
+    "enabled": false,
+    "token": "YOUR_ADMIN_BOT_TOKEN_HERE",
+    "admin_users": ["YOUR_TELEGRAM_USER_ID_HERE"],
+    "notifications": {
+      "bot_status": true,
+      "high_cpu": true,
+      "errors": true,
+      "weekly_stats": true
+    }
+  }
+}
