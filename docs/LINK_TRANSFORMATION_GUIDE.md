@@ -1,241 +1,261 @@
-# Link Transformation Feature Guide
+# 🔗 Руководство по функции "Ссылки → Кнопки"
 
-## Обзор
+## 🎯 Описание функции
 
-Функция Link Transformation (Преобразование ссылок) автоматически преобразует ссылки в ответах ИИ в удобные кнопки Telegram. Это улучшает пользовательский опыт, делая ссылки более заметными и удобными для нажатия.
+Функция автоматического преобразования ссылок в кнопки превращает обычные ссылки в сообщениях ИИ в красивые и удобные кнопки для пользователей Telegram.
 
-## Возможности
+### ✨ Как это работает:
 
-### ✨ Основные функции
-- **Автоматическое обнаружение ссылок** в ответах ИИ
-- **Гибкие правила сопоставления** (домен, содержимое URL, регулярные выражения, точное совпадение)
-- **Настраиваемый текст кнопок** с поддержкой плейсхолдеров
-- **Различные варианты размещения кнопок** (вертикально, горизонтально, автоматически)
-- **Предпросмотр преобразований** перед применением
-- **Готовые шаблоны** для популярных сервисов (Google Scripts, Google Sheets, GitHub)
+**ДО:**
+```
+Вот полезная ссылка: https://script.google.com/d/abc123/edit
+```
 
-### 🎯 Примеры использования
-- Google Apps Script ссылки → кнопка "📋 Открыть скрипт"
-- Google Sheets ссылки → кнопка "📊 Открыть таблицу" 
-- GitHub репозитории → кнопка "💻 Посмотреть код"
-- Документы и файлы → кнопка "📄 Скачать документ"
+**ПОСЛЕ:**
+```
+Вот полезная ссылка:
 
-## Настройка через веб-интерфейс
+[📊 Открыть Google Script] (кнопка)
+```
 
-### 1. Открытие настроек
-1. Зайдите в админ-панель бота
-2. Найдите нужного бота в списке
-3. Нажмите кнопку **"🔗 Ссылки → Кнопки"** рядом с другими кнопками управления
+---
 
-### 2. Основные настройки
-- **Включить преобразование ссылок**: Главный переключатель функции
-- **Максимум кнопок в сообщении**: Ограничение количества кнопок (1-10)
-- **Расположение кнопок**: Выбор layout'а кнопок
-- **Обрабатывать ответы ИИ**: Включить обработку только для ответов ИИ
-- **Сохранять форматирование**: Сохранение оригинального форматирования сообщений
+## 🚀 Быстрая настройка
 
-### 3. Создание правил преобразования
+### 1. Откройте настройки бота
+- Перейдите на главную страницу бот-менеджера
+- Найдите нужного бота
+- Нажмите кнопку **🔗** (Настройка ссылок)
 
-#### Типы сопоставления:
-- **По домену**: `script.google.com` 
-- **URL содержит**: `/spreadsheets/`
-- **Регулярное выражение**: `github\.com\/[^\/]+\/[^\/]+`
-- **Точное совпадение**: `https://example.com/exact-page`
+### 2. Включите функцию
+- В открывшемся окне включите переключатель
+- Выберите нужные шаблоны:
+  - **Google Сервисы** - для Google Sheets, Scripts, Drive
+  - **GitHub** - для репозиториев GitHub
+  - **Все Markdown ссылки** - для ссылок в формате `[текст](url)`
+  - **Свой домен** - для любого сайта
 
-#### Настройки кнопки:
-- **Текст кнопки**: Можно использовать `{domain}` и `{url}`
-- **Эмодзи**: Иконка для кнопки
-- **Удалять оригинальную ссылку**: Убирать ссылку из текста
-- **Добавлять предпросмотр**: Заменять ссылку описательным текстом
-
-### 4. Тестирование
+### 3. Протестируйте
 - Введите тестовый текст со ссылками
-- Нажмите **"Тестировать"** для предпросмотра результата
-- Убедитесь, что правила работают корректно
+- Нажмите "Протестировать"
+- Убедитесь, что кнопки создаются правильно
 
-## API Reference
+### 4. Сохраните настройки
+- Нажмите "Сохранить настройки"
 
-### Основные endpoints
+---
 
-#### GET `/api/v2/link-transformation/{bot_id}/config`
-Получить конфигурацию Link Transformation для бота.
+## 📝 Примеры использования
 
-#### PUT `/api/v2/link-transformation/{bot_id}/config`
-Обновить конфигурацию Link Transformation для бота.
-```json
+### Пример 1: Google Apps Script
+```
+Используйте этот скрипт: https://script.google.com/d/abc123/edit
+```
+**Результат:** Кнопка "📊 Открыть Google Script"
+
+### Пример 2: GitHub репозиторий
+```
+Код проекта: https://github.com/user/awesome-project
+```
+**Результат:** Кнопка "💻 Открыть GitHub"
+
+### Пример 3: Markdown ссылки
+```
+Изучите [документацию](https://api.example.com/docs)
+```
+**Результат:** Кнопка "🔗 документацию"
+
+### Пример 4: Собственный домен
+```
+Домен: youtube.com
+Текст кнопки: 🎥 Смотреть видео
+Ссылка: https://youtube.com/watch?v=abc123
+```
+**Результат:** Кнопка "🎥 Смотреть видео"
+
+---
+
+## ⚙️ Расширенные настройки
+
+### Типы совпадений:
+- **По домену** - Ссылки с определенного домена (например, `script.google.com`)
+- **URL содержит** - URL содержит определенный текст
+- **Регулярное выражение** - Сложные паттерны поиска
+- **Точное совпадение** - Конкретный URL
+- **Markdown ссылки** - Все ссылки в формате `[текст](url)`
+
+### Настройки кнопок:
+- **Максимум кнопок** - До 10 кнопок в одном сообщении
+- **Расположение** - Вертикально, горизонтально или автоматически
+- **Удаление ссылки** - Убирать оригинальную ссылку из текста
+- **Приоритет** - Порядок обработки правил
+
+---
+
+## 🎛️ Настройка через API
+
+### Получить конфигурацию:
+```bash
+GET /api/v2/link-transformation/{bot_id}/config
+```
+
+### Обновить конфигурацию:
+```bash
+PUT /api/v2/link-transformation/{bot_id}/config
+Content-Type: application/json
+
 {
   "enabled": true,
   "max_buttons_per_message": 5,
   "button_layout": "vertical",
-  "process_ai_responses": true,
-  "preserve_message_formatting": true,
-  "transformation_rules": [...]
+  "transformation_rules": [
+    {
+      "id": "google_script",
+      "name": "Google Apps Script",
+      "enabled": true,
+      "match_type": "domain",
+      "match_value": "script.google.com",
+      "button_text": "📊 Открыть Google Script",
+      "button_emoji": "📊",
+      "remove_original_link": true,
+      "priority": 100
+    }
+  ]
 }
 ```
 
-#### GET/POST/PUT/DELETE `/api/v2/link-transformation/{bot_id}/rules`
-Управление правилами преобразования.
+### Протестировать настройки:
+```bash
+POST /api/v2/link-transformation/{bot_id}/test
+Content-Type: application/json
 
-#### POST `/api/v2/link-transformation/{bot_id}/test`
-Тестирование преобразования ссылок.
-
-### Шаблоны и вспомогательные endpoints
-
-#### GET `/api/v2/link-transformation/templates`
-Получить готовые шаблоны правил.
-
-#### GET `/api/v2/link-transformation/match-types`
-Получить доступные типы сопоставления.
-
-## Интеграция в код
-
-### Автоматическое подключение UI
-Подключите скрипт для автоматического добавления кнопок:
-```html
-<script src="/static/js/link_transformation_ui.js"></script>
-```
-
-### Ручное добавление кнопки
-```javascript
-// Добавить кнопку в контейнер
-LinkTransformationUI.addButton(
-  botId,           // ID бота
-  'actionsContainer', // ID контейнера
-  {
-    buttonText: '🔗 Настроить ссылки',
-    buttonClass: 'btn btn-primary btn-sm'
-  }
-);
-
-// Открыть модальное окно напрямую
-LinkTransformationUI.openModal(botId);
-```
-
-## Структура данных
-
-### LinkTransformationConfig
-```python
-@dataclass
-class LinkTransformationConfig:
-    enabled: bool = False
-    max_buttons_per_message: int = 5
-    button_layout: str = "vertical"  # "vertical", "horizontal", "auto"
-    process_ai_responses: bool = True
-    preserve_message_formatting: bool = True
-    transformation_rules: List[LinkTransformationRule] = field(default_factory=list)
-```
-
-### LinkTransformationRule
-```python
-@dataclass
-class LinkTransformationRule:
-    id: str
-    name: str
-    enabled: bool = True
-    match_type: LinkMatchType
-    match_value: str
-    case_sensitive: bool = False
-    button_text: str
-    button_emoji: str = "🔗"
-    remove_original_link: bool = True
-    add_preview_text: bool = False
-    preview_text: str = ""
-    priority: int = 0
-```
-
-## Примеры конфигураций
-
-### Google Apps Script
-```json
 {
-  "name": "Google Apps Script",
-  "match_type": "domain",
-  "match_value": "script.google.com",
-  "button_text": "📋 Открыть скрипт",
-  "button_emoji": "📋"
+  "text": "Ссылка: https://script.google.com/d/abc123/edit"
 }
 ```
-
-### GitHub репозитории
-```json
-{
-  "name": "GitHub Repository",
-  "match_type": "url_regex",
-  "match_value": "github\\.com\\/[^\\/]+\\/[^\\/]+",
-  "button_text": "💻 {domain}",
-  "button_emoji": "💻"
-}
-```
-
-### Google Sheets
-```json
-{
-  "name": "Google Sheets",
-  "match_type": "url_contains", 
-  "match_value": "/spreadsheets/",
-  "button_text": "📊 Открыть таблицу",
-  "button_emoji": "📊"
-}
-```
-
-## Расширенные возможности
-
-### Плейсхолдеры в тексте кнопки
-- `{domain}` - домен URL (например, `github.com`)
-- `{url}` - полный URL
-
-### Приоритеты правил
-Правила применяются в порядке убывания приоритета. Первое совпавшее правило используется для ссылки.
-
-### Ограничения Telegram
-- Максимум 8 кнопок в ряду
-- Максимум 64 символа в тексте кнопки
-- Поддерживаются только URL кнопки (не callback)
-
-## Устранение неполадок
-
-### Ссылки не преобразуются
-1. Проверьте, что функция включена в настройках бота
-2. Убедитесь, что есть активные правила преобразования
-3. Проверьте правильность регулярных выражений
-4. Используйте функцию тестирования для отладки
-
-### Кнопка настроек не появляется
-1. Убедитесь, что подключен `link_transformation_ui.js`
-2. Проверьте консоль браузера на ошибки JavaScript
-3. Убедитесь, что API endpoints зарегистрированы
-
-### Ошибки API
-1. Проверьте логи сервера на ошибки импорта
-2. Убедитесь, что все зависимости установлены
-3. Проверьте права доступа к API endpoints
-
-## Безопасность
-
-- Все URL валидируются перед обработкой
-- Регулярные выражения имеют лимиты производительности
-- Количество кнопок ограничено для предотвращения спама
-- Поддерживается только преобразование в URL кнопки (не callback data)
-
-## Производительность
-
-- Обработка ссылок происходит только для сообщений с URL
-- Кеширование результатов обработки регулярных выражений
-- Ограничение на количество правил и кнопок
-- Отключение функции не влияет на производительность бота
 
 ---
 
-*Для получения дополнительной поддержки обратитесь к основной документации проекта или создайте issue в репозитории.*
+## 🔧 Техническая реализация
 
+### Архитектура:
+- **Domain Layer**: `LinkTransformationConfig`, `LinkTransformationRule`
+- **Use Cases**: `LinkTransformationService`
+- **API**: REST endpoints в `/api/v2/link-transformation/`
+- **UI**: Модальные окна для настройки
+- **Integration**: Автоматическая обработка в Telegram боте
 
+### Основные классы:
+- `LinkTransformationService` - Основная логика обработки
+- `LinkTransformationConfig` - Конфигурация функции
+- `LinkTransformationRule` - Отдельное правило преобразования
 
+---
 
+## 🛠️ Отладка
 
+### Проверка логов:
+```bash
+tail -f src/bot.log | grep "Link transformation"
+```
 
+### Тестирование правил:
+```python
+from core.usecases.link_transformation import LinkTransformationService
+from core.domain.link_transformation import create_google_script_rule
 
+service = LinkTransformationService()
+rule = create_google_script_rule()
+result = service.test_rule(rule, "https://script.google.com/d/123/edit")
+print(f"Matches: {result}")
+```
 
+### Частые проблемы:
+1. **Кнопки не создаются** - Проверьте, что функция включена в настройках бота
+2. **Неправильные совпадения** - Проверьте правильность паттернов в правилах
+3. **Ошибки валидации** - Убедитесь, что все обязательные поля заполнены
 
+---
 
+## 🎨 Кастомизация
+
+### Создание собственного правила:
+```python
+from core.domain.link_transformation import LinkTransformationRule, LinkMatchType
+
+custom_rule = LinkTransformationRule(
+    id="my_site",
+    name="My Website",
+    match_type=LinkMatchType.DOMAIN,
+    match_value="mysite.com",
+    button_text="🌐 Открыть мой сайт",
+    button_emoji="🌐",
+    remove_original_link=True,
+    priority=50
+)
+```
+
+### Шаблоны для популярных сервисов:
+- ✅ Google Apps Script
+- ✅ Google Sheets
+- ✅ GitHub
+- ✅ YouTube (пример)
+- 🔄 Добавьте свои!
+
+---
+
+## 🚨 Ограничения
+
+- Максимум 10 кнопок в одном сообщении
+- Длина текста кнопки до 64 символов
+- Поддерживаются только URL кнопки (не callback)
+- Обрабатываются только ответы ИИ (по умолчанию)
+
+---
+
+## 📈 Мониторинг
+
+### Метрики:
+- Количество обработанных ссылок
+- Количество созданных кнопок
+- Сработавшие правила
+- Ошибки обработки
+
+### Логирование:
+```
+✅ Transformed 2 links into 2 buttons
+🔗 Processing links for transformation...
+❌ Error in link transformation: Invalid regex pattern
+```
+
+---
+
+## 🎯 Рекомендации
+
+### Для лучшего UX:
+1. Используйте понятные названия кнопок
+2. Добавляйте эмодзи для узнаваемости
+3. Группируйте похожие ссылки
+4. Тестируйте настройки перед применением
+
+### Для производительности:
+1. Используйте правила с высоким приоритетом для часто встречающихся ссылок
+2. Избегайте слишком сложных regex паттернов
+3. Ограничивайте количество правил до 10-15
+
+---
+
+## 🔮 Будущие возможности
+
+- [ ] Аналитика кликов по кнопкам
+- [ ] Callback кнопки с пользовательскими действиями
+- [ ] Автоматические правила на основе ML
+- [ ] Интеграция с внешними сервисами
+- [ ] Групповые настройки для нескольких ботов
+
+---
+
+**© 2025 Telegram Bot Manager - Link Transformation Feature**  
+*Профессиональное преобразование ссылок в кнопки для лучшего UX* 🚀
 
 
