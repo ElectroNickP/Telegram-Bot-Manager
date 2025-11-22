@@ -1,0 +1,1 @@
+[31m[1mERROR   [0m src.shared.jwt_service:jwt_service.py:109 ❌ Unexpected error in JWT verification: Token verification error: 'NoneType' object has no attribute 'rsplit'

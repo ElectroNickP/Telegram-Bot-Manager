@@ -1,0 +1,1 @@
+{"uuid": "4400a14e-dc4b-404e-88fe-e67c53dc1ed1", "children": ["42cd3558-e888-4ff1-845f-d21a2a5f6da0"], "befores": [{"name": "git_adapter", "status": "passed", "start": 1760786237008, "stop": 1760786237042}], "start": 1760786237008, "stop": 1760786237063}

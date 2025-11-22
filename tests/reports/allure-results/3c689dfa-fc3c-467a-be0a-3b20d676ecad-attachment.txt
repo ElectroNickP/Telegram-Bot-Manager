@@ -1,0 +1,1 @@
+[31m[1mERROR   [0m shared.auth:auth.py:242 Password change failed: .env file not found

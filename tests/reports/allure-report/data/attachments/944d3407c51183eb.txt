@@ -1,0 +1,1 @@
+[33mWARNING [0m src.shared.jwt_service:jwt_service.py:104 ⚠️ JWT verification failed: Invalid token: Not enough segments

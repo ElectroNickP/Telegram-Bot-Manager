@@ -1,0 +1,15 @@
+
+[notice] A new release of pip is available: 25.2 -> 25.3
+[notice] To update, run: /home/nick/Projects/Phuket/Telegram-Bot-Manager/venv/bin/python3.12 -m pip install --upgrade pip
+
+[notice] A new release of pip is available: 25.2 -> 25.3
+[notice] To update, run: /home/nick/Projects/Phuket/Telegram-Bot-Manager/venv/bin/python3.12 -m pip install --upgrade pip
+🚀 Telegram Bot Manager - Production Mode
+🚀 Setting up production environment...
+📦 Installing production dependencies...
+✅ Dependencies installed
+🌟 Starting Gunicorn server...
+🌐 Web Interface: http://localhost:5000
+🔐 Login: admin / securepassword123
+Executing: venv/bin/gunicorn -c gunicorn_config.py app:create_app()
+❌ Gunicorn not found. Did installation fail?

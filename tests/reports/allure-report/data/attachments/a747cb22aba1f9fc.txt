@@ -1,0 +1,1 @@
+[1m[31mERROR   [0m config_manager:config_manager.py:65 Ошибка загрузки конфигураций: Expecting value: line 1 column 13 (char 12)

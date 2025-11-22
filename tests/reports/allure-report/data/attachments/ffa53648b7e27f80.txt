@@ -1,0 +1,1 @@
+[33mWARNING [0m src.app:app.py:107 ⚠️ Development mode: SESSION_COOKIE_SECURE disabled (OK for dev, FIX for production!)

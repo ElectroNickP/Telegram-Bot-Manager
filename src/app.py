@@ -7,6 +7,7 @@ This is the new modularized version of the Flask application.
 
 import logging
 import sys
+import os
 from datetime import timedelta
 from flask import Flask, send_from_directory
 
@@ -41,6 +42,9 @@ def create_app():
         logger.info(f"📋 Loaded {len(cm.BOT_CONFIGS)} bot(s) from configuration file")
         
         # Auto-start all configured bots
+        # Note: In a multi-worker Gunicorn setup, this would run in each worker.
+        # We rely on Gunicorn running with 1 worker (and multiple threads) 
+        # to prevent conflicting bot instances.
         bm.start_all_bots()
         logger.info("✅ Auto-start bots enabled")
         
@@ -50,8 +54,9 @@ def create_app():
     
     app = Flask(__name__, template_folder="templates")
     
-    # TODO: Move to environment variable (security issue from audit)
-    app.secret_key = "your-secret-key-change-in-production"
+    # Security: Load secret key from environment or fallback to a generated one for this session
+    # In production, ALWAYS set FLASK_SECRET_KEY
+    app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-key-change-in-prod-" + os.urandom(12).hex())
     
     # Configure Jinja2 filters
     app.jinja_env.filters["datetime"] = datetime_filter
@@ -63,11 +68,11 @@ def create_app():
             from __version__ import FULL_VERSION
             return dict(app_version=FULL_VERSION)
         except ImportError:
-            return dict(app_version="v3.7.6 - Complete Symlink Fix")
+            return dict(app_version="v3.8.3")
 
     # Session configuration
     app.config.update(
-        SESSION_COOKIE_SECURE=False,
+        SESSION_COOKIE_SECURE=False, # Set to True if using HTTPS
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
         PERMANENT_SESSION_LIFETIME=timedelta(hours=24),
@@ -95,14 +100,7 @@ def create_app():
         uploads_dir = Path(__file__).parent / 'static' / 'uploads'
         return send_from_directory(uploads_dir, filename)
     
-    logger.info("✅ Flask app created with modular structure")
-    logger.info("📋 Registered blueprints: auth, web, api_v1_bots, api_v1_system, api_v1_admin, api_v1_marketplace, api_v2_system, api_v2_bots, api_v2_telegram, api_v2_uploads, api_v2_link_transformation")
-    logger.info("✅ API v1 completed!")
-    logger.info("🚀 API v2 system module extracted!")
-    logger.info("🚀 API v2 bots module extracted!")
-    logger.info("🚀 API v2 telegram module extracted!")
-    logger.info("🔗 API v2 link transformation module added!")
-    logger.info("🎉 ALL API MODULES EXTRACTED! REFACTORING COMPLETE!")
+    logger.info("✅ Flask app created successfully")
     return app
 
 

@@ -1,0 +1,1 @@
+[1m[31mERROR   [0m shared.auth:auth.py:262 Password change error: Test error

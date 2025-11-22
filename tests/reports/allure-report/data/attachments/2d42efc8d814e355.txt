@@ -1,0 +1,1 @@
+[33mWARNING [0m src.shared.jwt_service:jwt_service.py:142 ⚠️ Token type mismatch: expected 'api_access', got 'wrong_type'

@@ -1,0 +1,1 @@
+[31m[1mERROR   [0m core.adapters.updater.git_adapter:git_adapter.py:101 Failed to check updates:

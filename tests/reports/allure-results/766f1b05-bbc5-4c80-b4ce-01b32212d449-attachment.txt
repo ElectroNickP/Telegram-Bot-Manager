@@ -1,0 +1,1 @@
+[33mWARNING [0m shared.auth:auth.py:224 Password change failed: invalid current password

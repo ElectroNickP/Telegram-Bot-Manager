@@ -1,0 +1,4 @@
+Initialized empty Git repository in /tmp/tmplrc8eogg/.git/
+[master (root-commit) 58ba994] Initial commit
+ 1 file changed, 1 insertion(+)
+ create mode 100644 README.md

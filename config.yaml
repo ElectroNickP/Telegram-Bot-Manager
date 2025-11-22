@@ -1,0 +1,126 @@
+# ================================================
+# Telegram Bot Manager - Plugin-Based Configuration
+# ================================================
+# All sensitive data in .env - NO HARDCODED TOKENS!
+
+# Telegram Configuration
+telegram:
+  # Bot token from environment variable
+  token: ${TELEGRAM_BOT_TOKEN}
+  
+  # Polling or webhook mode
+  mode: polling  # Options: polling, webhook
+  
+  # Webhook settings (if mode=webhook)
+  webhook:
+    url: ${WEBHOOK_URL}
+    port: 8443
+
+# Context Management
+context:
+  # Maximum messages to keep in memory per chat
+  depth: 20
+  
+  # Auto-summarize when limit reached
+  auto_summarize: true
+
+# Logging
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR
+  level: ${LOG_LEVEL:INFO}
+  
+  # Log file path
+  file: logs/bot.log
+  
+  # Max log file size (MB)
+  max_size: 10
+  
+  # Number of backup files
+  backup_count: 5
+
+# Plugins Configuration
+plugins:
+  # Directory containing plugins
+  directory: plugins
+  
+  # Active plugins (only these will be loaded)
+  # To disable a plugin: remove from list or set enabled: false in plugin's config.json
+  active:
+    - voice_processor
+    - gpt_reply
+    - user_sessions
+    - link_transformer
+  
+  # Plugin auto-reload on file change (development only)
+  hot_reload: false
+
+# OpenAI Configuration (if using GPT plugins)
+openai:
+  api_key: ${OPENAI_API_KEY}
+  model: gpt-4
+  max_tokens: 2000
+  temperature: 0.7
+
+# Database (optional, for plugins that need storage)
+database:
+  type: sqlite  # Options: sqlite, postgres, mysql
+  path: data/bot.db
+  # For postgres/mysql:
+  # host: ${DB_HOST}
+  # port: ${DB_PORT}
+  # name: ${DB_NAME}
+  # user: ${DB_USER}
+  # password: ${DB_PASSWORD}
+
+# Security
+security:
+  # Flask secret key (for web interface)
+  flask_secret: ${FLASK_SECRET_KEY}
+  
+  # JWT secret (for API authentication)
+  jwt_secret: ${JWT_SECRET_KEY}
+  
+  # Encryption key (for secrets at rest)
+  encryption_key: ${ENCRYPTION_KEY}
+  
+  # Force HTTPS in production
+  force_https: ${FORCE_HTTPS:true}
+  
+  # Environment (development, staging, production)
+  environment: ${ENVIRONMENT:development}
+
+# Feature Flags (global settings)
+features:
+  # Enable/disable all features at once
+  enabled: ${DISABLE_FEATURES:true}
+  
+  # Individual feature toggles (plugins can override)
+  voice_processing: true
+  ai_responses: true
+  link_transformation: true
+  user_sessions: true
+
+# Rate Limiting (per user)
+rate_limit:
+  enabled: true
+  messages_per_minute: 20
+  messages_per_hour: 100
+
+# Cache Settings
+cache:
+  enabled: true
+  max_groups: 1000
+  max_messages_per_group: 100
+
+# Development Settings
+development:
+  # Reload plugins on code change
+  auto_reload: false
+  
+  # Verbose logging
+  debug: false
+  
+  # Test mode (don't actually send messages)
+  test_mode: false
+
+
