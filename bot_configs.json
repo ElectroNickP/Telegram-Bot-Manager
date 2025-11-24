@@ -1,0 +1,136 @@
+{
+  "bots": {
+    "1": {
+      "id": 1,
+      "config": {
+        "bot_name": "D!P$Y",
+        "telegram_token": "${BOT_1_TELEGRAM_TOKEN}",
+        "openai_api_key": "${BOT_1_OPENAI_API_KEY}",
+        "assistant_id": "${BOT_1_ASSISTANT_ID}",
+        "group_context_limit": 15,
+        "enable_ai_responses": true,
+        "enable_voice_responses": true,
+        "marketplace": {
+          "enabled": true,
+          "username": "diosybot"
+        },
+        "voice_model": "tts-1",
+        "voice_type": "alloy",
+        "link_transformation": {
+          "enabled": false,
+          "max_buttons_per_message": 5,
+          "button_layout": "vertical",
+          "process_ai_responses": true,
+          "process_user_messages": false,
+          "preserve_message_formatting": true,
+          "transformation_rules": []
+        }
+      },
+      "status": "running"
+    }
+  },
+  "admin_bot": {
+    "enabled": false,
+    "token": "",
+    "admin_users": [],
+    "notifications": {
+      "bot_status": true,
+      "high_cpu": true,
+      "errors": true,
+      "weekly_stats": true
+    }
+  },
+  "user_sessions": {
+    "session_888_23068ef2": {
+      "session_id": "session_888_23068ef2",
+      "bot_id": 888,
+      "initiator": {
+        "user_id": 11111,
+        "username": "alice",
+        "first_name": "Alice",
+        "last_name": null,
+        "display_name": "@alice"
+      },
+      "target": {
+        "user_id": 22222,
+        "username": "bob",
+        "first_name": "Bob",
+        "last_name": null,
+        "display_name": "@bob"
+      },
+      "status": "ended",
+      "created_at": "2025-10-08T23:37:33.011899",
+      "updated_at": "2025-10-08T23:37:33.013196",
+      "ended_at": "2025-10-08T23:37:33.013194",
+      "message_count": 0
+    },
+    "session_777_24c96127": {
+      "session_id": "session_777_24c96127",
+      "bot_id": 777,
+      "initiator": {
+        "user_id": 33333,
+        "username": "alice",
+        "first_name": "Alice",
+        "last_name": null,
+        "display_name": "@alice"
+      },
+      "target": {
+        "user_id": 44444,
+        "username": "bob",
+        "first_name": "Bob",
+        "last_name": null,
+        "display_name": "@bob"
+      },
+      "status": "ended",
+      "created_at": "2025-10-08T23:37:33.014340",
+      "updated_at": "2025-10-08T23:37:33.015084",
+      "ended_at": "2025-10-08T23:37:33.015081",
+      "message_count": 0
+    }
+  },
+  "recent_users": {
+    "123456": {
+      "user_id": 123456,
+      "username": "testuser",
+      "first_name": "Test",
+      "bot_id": 999,
+      "last_seen": "2025-10-08T23:37:33.011157"
+    },
+    "11111": {
+      "user_id": 11111,
+      "username": "alice",
+      "first_name": "Alice",
+      "last_name": null,
+      "display_name": "@alice",
+      "bot_id": 888,
+      "last_seen": "2025-10-08T23:37:33.012548"
+    },
+    "22222": {
+      "user_id": 22222,
+      "username": "bob",
+      "first_name": "Bob",
+      "last_name": null,
+      "display_name": "@bob",
+      "bot_id": 888,
+      "last_seen": "2025-10-08T23:37:33.012856"
+    },
+    "33333": {
+      "user_id": 33333,
+      "username": "alice",
+      "first_name": "Alice",
+      "last_name": null,
+      "display_name": "@alice",
+      "bot_id": 777,
+      "last_seen": "2025-10-08T23:37:33.013640"
+    },
+    "44444": {
+      "user_id": 44444,
+      "username": "bob",
+      "first_name": "Bob",
+      "last_name": null,
+      "display_name": "@bob",
+      "bot_id": 777,
+      "last_seen": "2025-10-08T23:37:33.013974"
+    }
+  }
+}

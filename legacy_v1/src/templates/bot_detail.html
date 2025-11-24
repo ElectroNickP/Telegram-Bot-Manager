@@ -1,0 +1,207 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ bot.title }} - ELECTRONICK Marketplace{% endblock %}
+
+{% block styles %}
+<style>
+    .bot-detail-header {
+        background: var(--bg-card);
+        border-radius: var(--border-radius-lg);
+        padding: 2rem;
+        border: 1px solid var(--border-color);
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 2rem;
+        align-items: flex-start;
+    }
+
+    .bot-detail-avatar {
+        width: 120px;
+        height: 120px;
+        background: var(--secondary-light);
+        border-radius: var(--border-radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: var(--text-muted);
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .bot-detail-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .bot-detail-info {
+        flex: 1;
+    }
+
+    .bot-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0 0 0.5rem 0;
+    }
+
+    .bot-username {
+        font-size: 1.1rem;
+        color: var(--primary);
+        margin-bottom: 1rem;
+        font-weight: 500;
+    }
+
+    .bot-desc {
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        font-size: 1rem;
+    }
+
+    .bot-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .meta-item {
+        background: var(--bg-body);
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        text-align: center;
+    }
+
+    .meta-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        margin-bottom: 0.25rem;
+    }
+
+    .meta-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    .bot-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .tags-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .tag {
+        background: var(--secondary-light);
+        color: var(--text-muted);
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+        .bot-detail-header {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .bot-actions {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bot-detail-header">
+    <div class="bot-detail-avatar">
+        {% if bot.image_url %}
+        <img src="{{ bot.image_url }}" alt="{{ bot.title }}">
+        {% else %}
+        <i class="fas fa-robot"></i>
+        {% endif %}
+    </div>
+
+    <div class="bot-detail-info">
+        <h1 class="bot-title">{{ bot.title }}</h1>
+        <div class="bot-username">@{{ bot.username }}</div>
+
+        {% if bot.tags %}
+        <div class="tags-list">
+            {% for tag in bot.tags %}
+            <span class="tag">{{ tag }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="bot-desc">
+            {{ bot.description }}
+        </div>
+
+        <div class="bot-meta-grid">
+            <div class="meta-item">
+                <div class="meta-label">Category</div>
+                <div class="meta-value">{{ bot.category|title or 'Assistant' }}</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Users</div>
+                <div class="meta-value">{{ bot.users_count or '1.2K' }}</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Rating</div>
+                <div class="meta-value">
+                    <i class="fas fa-star" style="color: #fbbf24;"></i> {{ "%.1f"|format(bot.rating or 4.5) }}
+                </div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Status</div>
+                <div class="meta-value" style="color: var(--success);">Online</div>
+            </div>
+        </div>
+
+        <div class="bot-actions">
+            <a href="https://t.me/{{ bot.username }}" target="_blank" class="btn btn-primary">
+                <i class="fab fa-telegram-plane"></i> Launch Bot
+            </a>
+            <button onclick="shareBot()" class="btn btn-secondary">
+                <i class="fas fa-share-alt"></i> Share
+            </button>
+            <a href="/marketplace" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Market
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function shareBot() {
+        const url = window.location.href;
+        const text = 'Check out {{ bot.title }} on ELECTRONICK Marketplace!';
+
+        if (navigator.share) {
+            navigator.share({
+                title: '{{ bot.title }}',
+                text: text,
+                url: url
+            });
+        } else {
+            navigator.clipboard.writeText(`${text} ${url}`).then(() => {
+                alert('Link copied to clipboard!');
+            });
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,242 @@
+{% extends "layout.html" %}
+
+{% block title %}Dialogs - {{ bot_name }}{% endblock %}
+
+{% block styles %}
+<style>
+    .dialogs-container {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 1.5rem;
+        height: calc(100vh - 140px);
+    }
+
+    .dialogs-list-panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .panel-header {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+        color: var(--text-main);
+        background: var(--bg-body);
+    }
+
+    .dialogs-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0.5rem;
+    }
+
+    .dialog-item {
+        display: block;
+        padding: 0.75rem 1rem;
+        border-radius: var(--border-radius);
+        color: var(--text-main);
+        text-decoration: none;
+        transition: background-color var(--transition-fast);
+        margin-bottom: 0.25rem;
+    }
+
+    .dialog-item:hover {
+        background-color: var(--secondary-light);
+    }
+
+    .dialog-item.active {
+        background-color: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .dialog-name {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .dialog-meta {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .chat-panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .message {
+        max-width: 70%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .message.user {
+        align-self: flex-end;
+        align-items: flex-end;
+    }
+
+    .message.bot {
+        align-self: flex-start;
+    }
+
+    .message-bubble {
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .message.user .message-bubble {
+        background-color: var(--primary);
+        color: white;
+        border-bottom-right-radius: 0.25rem;
+    }
+
+    .message.bot .message-bubble {
+        background-color: var(--secondary-light);
+        color: var(--text-main);
+        border-bottom-left-radius: 0.25rem;
+    }
+
+    .message-time {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        margin-top: 0.25rem;
+    }
+
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: var(--text-muted);
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: var(--border-color);
+    }
+
+    @media (max-width: 768px) {
+        .dialogs-container {
+            grid-template-columns: 1fr;
+            height: auto;
+        }
+
+        .dialogs-list-panel {
+            height: 300px;
+        }
+
+        .chat-panel {
+            height: 500px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+    <a href="/" class="btn btn-secondary btn-icon">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+    <h1 style="margin: 0; font-size: 1.5rem;">Dialogs: {{ bot_name }}</h1>
+</div>
+
+<div class="dialogs-container">
+    <!-- List Panel -->
+    <div class="dialogs-list-panel">
+        <div class="panel-header">
+            Conversations
+        </div>
+        <div class="dialogs-list">
+            {% for key, data in conversations.items() %}
+            <a href="?conv_key={{ key }}" class="dialog-item {% if selected_conv_key == key %}active{% endif %}">
+                <div class="dialog-name">
+                    {% if data.user_info and data.user_info.display_name %}
+                    {% if data.user_info.type == 'group' %}
+                    <i class="fas fa-users"></i> {{ data.user_info.display_name }}
+                    {% else %}
+                    <i class="fas fa-user"></i> {{ data.user_info.display_name }}
+                    {% endif %}
+                    {% else %}
+                    {% set user_id = key.split('_')[-1] %}
+                    {% if user_id.startswith('-') %}
+                    <i class="fas fa-users"></i> Group {{ user_id }}
+                    {% else %}
+                    <i class="fas fa-user"></i> User {{ user_id }}
+                    {% endif %}
+                    {% endif %}
+                </div>
+                <div class="dialog-meta">
+                    {{ data.messages|length }} messages
+                </div>
+            </a>
+            {% else %}
+            <div class="empty-state" style="height: 200px;">
+                <i class="fas fa-comments empty-icon" style="font-size: 2rem;"></i>
+                <p>No conversations yet</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Chat Panel -->
+    <div class="chat-panel">
+        {% if selected_conversation %}
+        <div class="panel-header">
+            {% set selected_data = conversations.get(selected_conv_key, {}) %}
+            {% if selected_data.user_info and selected_data.user_info.display_name %}
+            {{ selected_data.user_info.display_name }}
+            {% else %}
+            Chat History
+            {% endif %}
+        </div>
+        <div class="chat-messages">
+            {% for msg in selected_conversation|reverse %}
+            <div class="message {{ msg.role }}">
+                <div class="message-bubble">
+                    {{ msg.content }}
+                </div>
+                <div class="message-time">
+                    {% if msg.timestamp %}
+                    {% set dt = msg.timestamp|datetime %}
+                    {{ dt.strftime('%H:%M:%S') if dt else '' }}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-comment-dots empty-icon"></i>
+            <h3>Select a conversation</h3>
+            <p>Choose a conversation from the list to view message history</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

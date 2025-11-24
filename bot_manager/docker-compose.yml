@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_DB: bot_manager
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    command: uvicorn src.web.app:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_SERVER=db
+      - POSTGRES_PASSWORD=postgres_password
+      - ENCRYPTION_KEY=tqxPVBH4QorWNk_d-k7jnU28574ngbB0OdfxkFgbu6Y=
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+      - ./alembic:/app/alembic
+      - ./alembic.ini:/app/alembic.ini
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    command: python -m src.worker.supervisor
+    environment:
+      - POSTGRES_SERVER=db
+      - POSTGRES_PASSWORD=postgres_password
+      - ENCRYPTION_KEY=tqxPVBH4QorWNk_d-k7jnU28574ngbB0OdfxkFgbu6Y=
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+      - ./alembic:/app/alembic
+      - ./alembic.ini:/app/alembic.ini
+
+volumes:
+  postgres_data:

@@ -1,0 +1,54 @@
+{
+  "bots": {
+    "1": {
+      "id": 1,
+      "config": {
+        "bot_name": "Test Bot",
+        "telegram_token": "gAAAAABpIdylHU56xVzEXPWfcNmfXfg3lEee_IyjNCS7bxEftx8OL5oJQ-KZ_TaQSwwfbTsEDYNkRq3sCxz9A0KFSjCqRRyqbw==",
+        "openai_api_key": "gAAAAABpIdylxAMKq5ZkGDYTd7gyGltQS58w_AnEg6bBRFPAzZUNCk1JqWVbEGPeN3jkc50lzA5CmrlF1m1tT1HlBEzekZNaJQ==",
+        "assistant_id": "asst_123"
+      },
+      "status": "stopped"
+    },
+    "2": {
+      "id": 2,
+      "config": {
+        "bot_name": "QA Bot",
+        "telegram_token": "gAAAAABpIqkRywWwgCssTtU_p5OjxfCFS-MhCP6r9CWKP5pQ8q49gyHlBM1qeS3G7tGjuR6Gt7oFNGM9FQ00I8fuXCpLJckhtsyVTdt1xoDzBIM8fP85nlD7OlFgHXY-LhjrsORrV99K",
+        "openai_api_key": "gAAAAABpIqkRo6C0Vl_tX-pX3dcHDw2rE_m-AhBaduEt_Jn68BkCKG3gU8n0rpBXtYlSE-EaUq4tDEmv245a-_fMl_Ckuftp8w==",
+        "assistant_id": "asst_test_id",
+        "enable_ai_responses": true,
+        "enable_voice_responses": false,
+        "group_context_limit": 15,
+        "voice_model": "tts-1",
+        "voice_type": "alloy",
+        "marketplace": {
+          "enabled": false,
+          "title": "",
+          "description": "",
+          "category": "other",
+          "username": "",
+          "website": "",
+          "image_url": "",
+          "tags": [],
+          "featured": false,
+          "rating": 0.0,
+          "total_users": 0,
+          "last_updated": null
+        }
+      },
+      "status": "stopped"
+    }
+  },
+  "admin_bot": {
+    "enabled": false,
+    "token": "",
+    "admin_users": [],
+    "notifications": {
+      "bot_status": true,
+      "high_cpu": true,
+      "errors": true,
+      "weekly_stats": true
+    }
+  }
+}

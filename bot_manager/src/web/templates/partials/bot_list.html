@@ -1,0 +1,68 @@
+<div class="bots-grid">
+    {% for bot in bots %}
+    <div class="bot-card">
+        <div class="bot-card-header">
+            <div class="bot-actions">
+                <button class="btn-icon" hx-get="/dashboard/bots/{{ bot.id }}/edit" hx-target="#bot-form-container"
+                    onclick="document.getElementById('bot-modal').showModal()" title="Edit Bot">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <a href="/dashboard/bots/{{ bot.id }}/conversations" class="btn-icon" title="View Conversations">
+                    <i class="fas fa-comments"></i>
+                </a>
+                <button class="btn-icon"><i class="fas fa-power-off"></i></button>
+                <button class="btn-icon"><i class="fas fa-trash"></i></button>
+            </div>
+            <div class="bot-identity">
+                <div class="bot-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="bot-info">
+                    <h4>{{ bot.name }}</h4>
+                    <p>ID: {{ bot.id }}</p>
+                </div>
+            </div>
+            <span class="status-badge {{ 'running' if bot.status == 'running' else 'stopped' }}">
+                <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                {{ bot.status|title }}
+            </span>
+        </div>
+
+        <div class="bot-card-body">
+            <div class="info-row">
+                <span class="info-label">Token</span>
+                <span class="info-value">••••{{ bot.telegram_token[-4:] if bot.telegram_token else '????' }}</span>
+            </div>
+
+            <div class="bot-features">
+                <span class="feature-tag"><i class="fas fa-brain"></i> AI</span>
+            </div>
+        </div>
+
+        <div class="bot-card-footer">
+            {% if bot.status == 'running' %}
+            <button class="btn btn-secondary btn-icon" title="Stop">
+                <i class="fas fa-stop" style="color: var(--danger);"></i>
+            </button>
+            {% else %}
+            <button class="btn btn-secondary btn-icon" title="Start">
+                <i class="fas fa-play" style="color: var(--success);"></i>
+            </button>
+            {% endif %}
+
+            <button class="btn btn-secondary btn-icon" title="Edit">
+                <i class="fas fa-cog"></i>
+            </button>
+
+            <button class="btn btn-secondary btn-icon" title="Logs">
+                <i class="fas fa-terminal"></i>
+            </button>
+        </div>
+    </div>
+    {% else %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-muted);">
+        <i class="fas fa-robot" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+        <p>No bots found. Create your first bot to get started.</p>
+    </div>
+    {% endfor %}
+</div>

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-brain sidebar-logo-icon"></i>
+            <a href="/" class="sidebar-logo-text">ELECTRONICK</a>
+        </div>
+
+        <nav class="nav-links">
+            <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">
+                <i class="fas fa-home"></i> <span>Dashboard</span>
+            </a>
+            <a href="/marketplace" class="nav-link {% if request.path.startswith('/marketplace') %}active{% endif %}">
+                <i class="fas fa-store"></i> <span>Marketplace</span>
+            </a>
+            <a href="/api/v2/docs" class="nav-link">
+                <i class="fas fa-code"></i> <span>API Docs</span>
+            </a>
+
+            <div class="nav-divider">System</div>
+
+            <a href="#" onclick="checkUpdates()" class="nav-link">
+                <i class="fas fa-sync-alt"></i> <span>Updates</span>
+            </a>
+            <a href="#" onclick="openBackups()" class="nav-link">
+                <i class="fas fa-database"></i> <span>Backups</span>
+            </a>
+            <a href="/logout" onclick="return confirm('Logout?')" class="nav-link text-danger">
+                <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">Admin</div>
+                    <div class="app-version">v{{ app_version }}</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+</div>
+{% endblock %}

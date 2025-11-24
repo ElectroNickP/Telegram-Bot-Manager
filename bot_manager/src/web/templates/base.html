@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Telegram Bot Manager{% endblock %}</title>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+    {% block body %}{% endblock %}
+    <!-- Scripts -->
+    <script>
+        // HTMX config if needed
+    </script>
+
+    <script>
+        // Global listener for token validation autofill
+        document.body.addEventListener('htmx:afterRequest', function (evt) {
+            console.log('HTMX afterRequest fired', evt.detail);
+
+            if (!evt.detail.successful) {
+                console.log('Request not successful');
+                return;
+            }
+
+            const triggerHeader = evt.detail.xhr.getResponseHeader('HX-Trigger');
+            console.log('HX-Trigger header:', triggerHeader);
+
+            if (!triggerHeader) {
+                return;
+            }
+
+            try {
+                const triggers = JSON.parse(triggerHeader);
+                console.log('Parsed triggers:', triggers);
+
+                if (triggers.fillBotName) {
+                    console.log('fillBotName found:', triggers.fillBotName);
+                    // Save to sessionStorage
+                    sessionStorage.setItem('pendingBotName', triggers.fillBotName);
+
+                    const nameInput = document.getElementById('bot-name-input');
+                    console.log('Name input element:', nameInput);
+
+                    if (nameInput) {
+                        console.log('Current value:', nameInput.value);
+                        // Set value multiple ways to ensure it sticks
+                        nameInput.value = triggers.fillBotName;
+                        nameInput.setAttribute('value', triggers.fillBotName);
+                        // Trigger input event to notify any listeners
+                        nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        nameInput.dispatchEvent(new Event('change', { bubbles: true }));
+                        console.log('New value set:', nameInput.value);
+                    }
+                }
+            } catch (e) {
+                console.error('Error parsing HX-Trigger:', e);
+            }
+        });
+
+        // Restore bot name on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            const pendingName = sessionStorage.getItem('pendingBotName');
+            if (pendingName) {
+                const nameInput = document.getElementById('bot-name-input');
+                if (nameInput && !nameInput.value) {
+                    nameInput.value = pendingName;
+                    console.log('Restored bot name from sessionStorage:', pendingName);
+                }
+            }
+        });
+
+        // Also restore after HTMX swaps
+        document.body.addEventListener('htmx:afterSwap', function () {
+            const pendingName = sessionStorage.getItem('pendingBotName');
+            if (pendingName) {
+                setTimeout(() => {
+                    const nameInput = document.getElementById('bot-name-input');
+                    if (nameInput && !nameInput.value) {
+                        nameInput.value = pendingName;
+                        nameInput.setAttribute('value', pendingName);
+                        nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        console.log('Restored bot name after swap:', pendingName);
+                    }
+                }, 50);
+            }
+        });
+
+        // Clear sessionStorage when modal closes (bot created successfully)
+        document.body.addEventListener('closeModal', function () {
+            sessionStorage.removeItem('pendingBotName');
+            console.log('Cleared pendingBotName from sessionStorage');
+        });
+    </script>
+</body>
+
+</html>

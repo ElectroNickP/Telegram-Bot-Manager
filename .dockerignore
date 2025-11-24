@@ -1,33 +1,32 @@
-# Docker ignore для тестирования развертывания
-
-# Virtual environments
+# Игнорируем системные файлы и мусор
+.git
+.gitignore
+.env
 venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info
+.eggs/
 
-# Logs and temporary files  
-*.log
-*.tmp
-*.temp
-*.pid
-
-# Development files
-.git/
-.vscode/
-.idea/
-
-# Test results
-test-results/
+# Игнорируем логи и временные файлы
 logs/
+*.log
+operative/
+tests/qa/
+tests/reports/
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+.coverage
 
-# OS files
-.DS_Store
-Thumbs.db
+# Игнорируем бэкапы и документацию в сборке (если не нужна для статики)
+backups/
+docs/
+infra/legacy_docker/
 
-# Development configs that shouldn't be in container
-bot_configs.json
-src/bot_configs.json
-
-# Node modules if any
-node_modules/
-
+# Игнорируем локальные конфиги (будут монтироваться или передаваться через env)
+# bot_configs.json (Оставляем, если он нужен как шаблон, но секреты там удалены)
+process_config.json

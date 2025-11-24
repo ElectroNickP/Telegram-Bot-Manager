@@ -1,0 +1,246 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard - ELECTRONICK{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Overview -->
+<div class="stats-grid">
+    <div class="stat-card" onclick="filterBots('all')">
+        <div class="stat-info">
+            <h3>{{ bots|length }}</h3>
+            <p>Total Bots</p>
+        </div>
+        <div class="stat-icon primary">
+            <i class="fas fa-robot"></i>
+        </div>
+    </div>
+
+    <div class="stat-card" onclick="filterBots('running')">
+        <div class="stat-info">
+            <h3>{{ bots|selectattr('status', 'equalto', 'running')|list|length }}</h3>
+            <p>Running</p>
+        </div>
+        <div class="stat-icon success">
+            <i class="fas fa-play"></i>
+        </div>
+    </div>
+
+    <div class="stat-card" onclick="filterBots('stopped')">
+        <div class="stat-info">
+            <h3>{{ bots|selectattr('status', 'equalto', 'stopped')|list|length }}</h3>
+            <p>Stopped</p>
+        </div>
+        <div class="stat-icon warning">
+            <i class="fas fa-pause"></i>
+        </div>
+    </div>
+
+    <div class="stat-card" onclick="filterBots('marketplace')">
+        <div class="stat-info">
+            <h3>{{ marketplace_count }}</h3>
+            <p>Marketplace</p>
+        </div>
+        <div class="stat-icon info">
+            <i class="fas fa-store"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Action Bar -->
+<div class="action-bar">
+    <div class="search-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search bots...">
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+        <button class="btn btn-secondary" onclick="openCreateAdminBotModal()">
+            <i class="fas fa-wrench"></i> Admin Bot
+        </button>
+        <button class="btn btn-primary" onclick="openCreateBotModal()">
+            <i class="fas fa-plus"></i> New Bot
+        </button>
+    </div>
+</div>
+
+<!-- Bots Grid -->
+<div class="bots-grid" id="botsGrid">
+    {% for bot in bots %}
+    <div class="bot-card" data-bot-id="{{ bot.id }}" data-status="{{ bot.status }}"
+        data-name="{{ bot.config.bot_name|lower }}"
+        data-marketplace="{{ bot.config.get('marketplace', {}).get('enabled', False)|lower }}">
+
+        <div class="bot-card-header">
+            <div class="bot-identity">
+                <div class="bot-avatar">
+                    {% if bot.config.get('marketplace', {}).get('image_url') %}
+                    <img src="{{ bot.config.get('marketplace', {}).get('image_url') }}" alt="">
+                    {% else %}
+                    <i class="fas fa-robot"></i>
+                    {% endif %}
+                </div>
+                <div class="bot-info">
+                    <h4>{{ bot.config.bot_name }}</h4>
+                    <p>ID: {{ bot.id }}</p>
+                </div>
+            </div>
+            <span class="status-badge {{ 'running' if bot.status == 'running' else 'stopped' }}">
+                <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                {{ 'Running' if bot.status == 'running' else 'Stopped' }}
+            </span>
+        </div>
+
+        <div class="bot-card-body">
+            <div class="info-row">
+                <span class="info-label">Context</span>
+                <span class="info-value">{{ bot.config.group_context_limit }} msgs</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Type</span>
+                <span class="info-value">
+                    {% if bot.config.get('enable_ai_responses', True) %}AI Assistant{% else %}Transcriber{% endif %}
+                </span>
+            </div>
+
+            <div class="bot-features">
+                {% if bot.config.get('enable_voice_responses') %}
+                <span class="feature-tag"><i class="fas fa-volume-up"></i> TTS</span>
+                {% endif %}
+                {% if bot.config.get('marketplace', {}).get('enabled') %}
+                <span class="feature-tag"><i class="fas fa-store"></i> Market</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="bot-card-footer">
+            <button class="btn btn-secondary btn-icon start-btn" onclick="botAction({{ bot.id }}, 'start', this)" {% if
+                bot.status=='running' %}disabled{% endif %} title="Start">
+                <i class="fas fa-play" style="color: var(--success);"></i>
+            </button>
+            <button class="btn btn-secondary btn-icon stop-btn" onclick="botAction({{ bot.id }}, 'stop', this)" {% if
+                bot.status !='running' %}disabled{% endif %} title="Stop">
+                <i class="fas fa-stop" style="color: var(--danger);"></i>
+            </button>
+
+            <button class="btn btn-secondary btn-icon edit-btn" onclick="openEditModal({{ bot.id }})" title="Edit">
+                <i class="fas fa-cog"></i>
+            </button>
+
+            <button class="btn btn-secondary btn-icon" onclick="openSmartButtonsModal({{ bot.id }})"
+                title="Smart Buttons">
+                <i class="fas fa-magic" style="color: #8b5cf6;"></i>
+            </button>
+
+            <button class="btn btn-secondary btn-icon" onclick="location.href='/dialogs/{{ bot.id }}'" title="Dialogs">
+                <i class="fas fa-comments"></i>
+            </button>
+
+            <button class="btn btn-danger btn-icon delete-btn" onclick="deleteBot({{ bot.id }}, this)"
+                style="margin-left: auto;" title="Delete">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Edit Bot Modal -->
+<div class="modal-overlay" id="editBotModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3 class="modal-title">Edit Bot Configuration</h3>
+            <button class="btn btn-icon" onclick="closeEditModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="editBotForm">
+            <input type="hidden" id="edit_bot_id">
+            <div class="form-group">
+                <label class="form-label">Bot Name</label>
+                <input type="text" class="form-control" id="edit_bot_name" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Telegram Token</label>
+                <input type="text" class="form-control" id="edit_telegram_token" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">OpenAI API Key</label>
+                <input type="text" class="form-control" id="edit_openai_api_key" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Assistant ID</label>
+                <input type="text" class="form-control" id="edit_assistant_id" required>
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="edit_enable_ai_responses">
+                    <label for="edit_enable_ai_responses" class="form-label" style="margin:0">Enable AI
+                        Responses</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="edit_enable_voice_responses">
+                    <label for="edit_enable_voice_responses" class="form-label" style="margin:0">Enable Voice
+                        (TTS)</label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Save Changes</button>
+        </form>
+    </div>
+</div>
+
+<!-- Create Bot Modal -->
+<div class="modal-overlay" id="createBotModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3 class="modal-title">Create New Bot</h3>
+            <button class="btn btn-icon" onclick="closeCreateBotModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="createBotForm">
+            <div class="form-group">
+                <label class="form-label">Telegram Token</label>
+                <input type="text" class="form-control" id="telegram_token" required placeholder="123456789:ABC...">
+                <div id="token_validation_status" style="font-size: 0.75rem; margin-top: 0.25rem;"></div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Bot Name</label>
+                <input type="text" class="form-control" id="bot_name" placeholder="Auto-filled from token">
+            </div>
+            <div class="form-group">
+                <label class="form-label">OpenAI API Key</label>
+                <input type="text" class="form-control" id="openai_api_key" required placeholder="sk-...">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Assistant ID</label>
+                <input type="text" class="form-control" id="assistant_id" required placeholder="asst_...">
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="enable_ai_responses" checked>
+                    <label for="enable_ai_responses" class="form-label" style="margin:0">Enable AI Responses</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="enable_voice_responses">
+                    <label for="enable_voice_responses" class="form-label" style="margin:0">Enable Voice (TTS)</label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Create Bot</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

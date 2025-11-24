@@ -1,0 +1,118 @@
+<form hx-post="{{ '/dashboard/bots/' + bot.id|string + '/edit' if bot else '/dashboard/bots/create' }}"
+    hx-target="#bot-list">
+
+    <div class="form-group">
+        <label>Name</label>
+        <input type="text" name="name" id="bot-name-input" value="{{ bot.name if bot else '' }}" required
+            class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label>Telegram Token</label>
+        <input type="text" name="telegram_token" class="form-control" value="{{ bot.telegram_token if bot else '' }}"
+            required>
+        <div id="token-validation-result"></div>
+    </div>
+
+    <div class="form-group">
+        <label>OpenAI API Key</label>
+        <input type="password" name="openai_api_key" value="{{ bot.openai_api_key if bot else '' }}" required
+            class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label>OpenAI Assistant ID</label>
+        <input type="text" name="assistant_id" class="form-control" value="{{ bot.assistant_id if bot else '' }}"
+            hx-post="/dashboard/validate/openai-assistant" hx-trigger="change, keyup delay:1000ms"
+            hx-target="#assistant-validation-result" hx-include="[name='openai_api_key']" hx-swap="innerHTML">
+        <div id="assistant-validation-result"></div>
+    </div>
+
+    <div class="form-group">
+        <label>System Prompt</label>
+        <textarea name="system_prompt" rows="4"
+            class="form-control">{{ bot.system_prompt if bot else 'You are a helpful assistant.' }}</textarea>
+    </div>
+
+    <div class="form-row" style="display: flex; gap: 1rem;">
+        <div class="form-group" style="flex: 1;">
+            <label>Voice ID</label>
+            <select name="voice_id" class="form-control">
+                <option value="alloy" {{ 'selected' if bot and bot.voice_settings.get('voice_id')=='alloy' else '' }}>
+                    Alloy</option>
+                <option value="echo" {{ 'selected' if bot and bot.voice_settings.get('voice_id')=='echo' else '' }}>Echo
+                </option>
+                <option value="fable" {{ 'selected' if bot and bot.voice_settings.get('voice_id')=='fable' else '' }}>
+                    Fable</option>
+                <option value="onyx" {{ 'selected' if bot and bot.voice_settings.get('voice_id')=='onyx' else '' }}>Onyx
+                </option>
+                <option value="nova" {{ 'selected' if bot and bot.voice_settings.get('voice_id')=='nova' else '' }}>Nova
+                </option>
+                <option value="shimmer" {{ 'selected' if bot and bot.voice_settings.get('voice_id')=='shimmer' else ''
+                    }}>Shimmer</option>
+            </select>
+        </div>
+        <div class="form-group" style="flex: 1;">
+            <label>Speed</label>
+            <input type="number" name="voice_speed" step="0.1" min="0.25" max="4.0"
+                value="{{ bot.voice_settings.get('speed', 1.0) if bot else 1.0 }}" class="form-control">
+        </div>
+    </div>
+
+    <div class="modal-actions">
+        <button type="button" onclick="document.getElementById('bot-modal').close()"
+            class="btn btn-secondary">Cancel</button>
+        <button type="submit" class="btn btn-primary">{{ 'Save Changes' if bot else 'Create Bot' }}</button>
+    </div>
+</form>
+
+<script>
+    // Token validation with jQuery
+    $(document).ready(function () {
+        $('input[name="telegram_token"]').on('change keyup', function () {
+            const token = $(this).val();
+            const $validationResult = $('#token-validation-result');
+
+            if (!token) {
+                $validationResult.html('');
+                return;
+            }
+
+            // Clear previous timeout
+            clearTimeout(window.tokenValidationTimeout);
+
+            // Debounce validation
+            window.tokenValidationTimeout = setTimeout(function () {
+                $.ajax({
+                    url: '/dashboard/validate/telegram-token',
+                    method: 'POST',
+                    data: { token: token },
+                    success: function (res) {
+                        if (res.success && res.data) {
+                            // Show success message
+                            $validationResult.html(
+                                '<div style="color: var(--success); margin-top: 0.5rem; font-size: 0.9rem;">' +
+                                '<i class="fas fa-check-circle"></i> Valid: <strong>@' + res.data.username + '</strong> (' + res.data.first_name + ')' +
+                                '</div>'
+                            );
+
+                            // Auto-fill name if empty
+                            const $nameInput = $('#bot-name-input');
+                            if (!$nameInput.val()) {
+                                $nameInput.val(res.data.first_name);
+                            }
+                        }
+                    },
+                    error: function (xhr) {
+                        const error = xhr.responseJSON?.error || 'Invalid token';
+                        $validationResult.html(
+                            '<div style="color: var(--danger); margin-top: 0.5rem; font-size: 0.9rem;">' +
+                            '<i class="fas fa-times-circle"></i> ' + error +
+                            '</div>'
+                        );
+                    }
+                });
+            }, 1000);
+        });
+    });
+</script>

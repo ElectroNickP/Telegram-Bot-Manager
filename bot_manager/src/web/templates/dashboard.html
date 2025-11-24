@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Bot Manager{% endblock %}
+
+{% block body %}
+<div class="dashboard-layout" hx-on:close-modal="document.getElementById('bot-modal').close()"
+    hx-on:fill-bot-name="document.getElementById('bot-name-input').value = event.detail.fillBotName">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-brain sidebar-logo-icon"></i>
+            <a href="/dashboard" class="sidebar-logo-text">ELECTRONICK</a>
+        </div>
+
+        <nav class="nav-links">
+            <a href="/dashboard" class="nav-link active">
+                <i class="fas fa-home"></i> <span>Dashboard</span>
+            </a>
+
+            <div class="nav-divider">System</div>
+
+            <a href="/logout" class="nav-link text-danger">
+                <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">Admin</div>
+                    <div class="app-version">v2.0.0</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="action-bar">
+            <div class="search-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Search bots..." hx-get="/dashboard/bots"
+                    hx-trigger="keyup changed delay:500ms" hx-target="#bot-list" name="q">
+            </div>
+
+            <button class="btn-primary" hx-get="/dashboard/bots/new" hx-target="#bot-form-container"
+                onclick="document.getElementById('bot-modal').showModal()">
+                <i class="fas fa-plus"></i> New Bot
+            </button>
+        </div>
+
+        <div id="bot-list" hx-get="/dashboard/bots" hx-trigger="load, every 3s">
+            <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                <i class="fas fa-spinner fa-spin"></i> Loading bots...
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Bot Modal -->
+    <!-- Modal -->
+    <dialog id="bot-modal" class="modal">
+        <div class="modal-content">
+            <h3>Bot Configuration</h3>
+            <div id="bot-form-container">
+                <!-- Form loaded via HTMX -->
+            </div>
+        </div>
+    </dialog>
+
+    <script>
+        // Open modal when New Bot is clicked (triggers HTMX)
+        function openNewBotModal() {
+            const modal = document.getElementById('bot-modal');
+            modal.showModal();
+            // HTMX request is triggered by the button itself
+        }
+    </script>
+</div>
+{% endblock %}
